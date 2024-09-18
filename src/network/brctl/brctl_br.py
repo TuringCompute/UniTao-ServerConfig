@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
 
 import sys
-from lib.util import Util
+from lib.utilities import Util
 
 
-if __name__ == "main":
+if __name__ == "__main__":
     if len(sys.argv) < 2:
         print("Usage: veth.py < <json_file_path>")
         sys.exit(-1)
