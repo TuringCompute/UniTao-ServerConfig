@@ -1,32 +1,7 @@
 #!/usr/bin/env python3
 import sys
-import json
-import subprocess
 
-def read_json_file(file_path):
-    try:
-        with open(file_path, 'r') as file:
-            data = json.load(file)
-            return data
-    except FileNotFoundError:
-        print(f"Error: The file '{file_path}' was not found.")
-        sys.exit(-2)
-    except json.JSONDecodeError:
-        print(f"Error: The file '{file_path}' is not a valid JSON file.")
-        sys.exit(-3)
-
-
-def run_command(command: list[str]):
-    cmd_str = " ".join(command)
-    try:
-        result = subprocess.run(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
-        if result.returncode != 0:
-            print(f"Error: command [{0}] run failed with error:{1}".format(cmd_str, result.stderr))
-            sys.exit(-9)
-        return result
-    except Exception as e:
-        print(f"Error: Command [{0}] got an error: {1}".format(cmd_str, e))
-        sys.exit(-8)
+from lib.util import Util
 
 
 def veth_op(veth_data):
@@ -62,7 +37,7 @@ def veth_set(veth_data):
 def veth_exists(veth0, veth1):
     veth_name1 = "{0}@{1}".format(veth0, veth1)
     veth_name2 = "{0}@{1}".format(veth1, veth0)
-    result = run_command(['ip', 'link'])
+    result = Util.run_command(['ip', 'link'])
     output = result.stdout
     if veth_name1 in output and veth_name2 in output:
         return True
@@ -72,7 +47,7 @@ def veth_exists(veth0, veth1):
 
 def veth_create(veth0, veth1):
     iplink_cmd = ['ip', 'link', 'add', veth0, 'type', 'veth', 'peer', 'name', veth1]
-    run_command(iplink_cmd)
+    Util.run_command(iplink_cmd)
 
 
 def veth_delete(veth_data):
@@ -89,7 +64,7 @@ def veth_delete(veth_data):
 
 def veth_destroy(veth0):
     iplink_cmd = ['ip', 'link', 'delete', veth0]
-    run_command(iplink_cmd)
+    Util.run_command(iplink_cmd)
 
 
 if __name__ == "main":
@@ -98,6 +73,6 @@ if __name__ == "main":
         sys.exit(-1)
 
     file_path = sys.argv[1]
-    json_data = read_json_file(file_path)
+    json_data = Util.read_json_file(file_path)
     veth_op(json_data)
 
