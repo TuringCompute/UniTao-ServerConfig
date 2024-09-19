@@ -2,21 +2,7 @@
 import sys
 
 from lib.utilities import Util
-
-
-def veth_op(veth_data):
-    op = veth_data.get("op", None)
-    if op == "set":
-        veth_set(veth_data)
-    elif op == "delete":
-        veth_delete(veth_data)
-    elif op is None:
-        print("Error: Missing field [op] from JSON data")
-        sys.exit(-4)
-    else:
-        print("Error: Expect op in [set, delete], got {0} instead".format(op))
-        sys.exit(-5)
-
+from lib.entity import EntityOp
 
 def veth_set(veth_data):
     veth0 = veth_data.get("veth0", None)
@@ -66,13 +52,20 @@ def veth_destroy(veth0):
     iplink_cmd = ['ip', 'link', 'delete', veth0]
     Util.run_command(iplink_cmd)
 
+def init_veth_op() -> EntityOp:
+    veth_op = EntityOp()
+    veth_op.EntityExists = veth_exists
+    veth_op.CreateEntity = veth_create
+    veth_op.DestroyEntity = veth_delete
+    return veth_op
 
 if __name__ == "__main__":
     if len(sys.argv) < 2:
         print("Usage: veth.py < <json_file_path>")
         sys.exit(-1)
-
     file_path = sys.argv[1]
+    veth_op = init_veth_op()
     json_data = Util.read_json_file(file_path)
-    veth_op(json_data)
+    veth_op.Run(json_data)
+    
 
