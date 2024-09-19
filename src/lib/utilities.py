@@ -17,12 +17,13 @@ class Util:
 
     def run_command(command: list[str]):
         cmd_str = " ".join(command)
+        print("command " + cmd_str)
         try:
             result = subprocess.run(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
             if result.returncode != 0:
-                print(f"Error: command [{0}] run failed with error:{1}".format(cmd_str, result.stderr))
+                print(f"Error: command [{cmd_str}] run failed with error:{result.stderr}")
                 sys.exit(-9)
             return result
         except Exception as e:
-            print(f"Error: Command [{0}] got an error: {1}".format(cmd_str, e))
+            print(f"Error: Command [{cmd_str}] got an error: {e}")
             sys.exit(-8)
