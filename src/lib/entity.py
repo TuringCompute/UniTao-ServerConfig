@@ -5,12 +5,12 @@ class Keyword:
 
 class EntityOp:
     def make_entity(self, entity_data):
-        if not self.entity_exists(entity_data):
-            self.make_entity(entity_data)
+        if not self.EntityExists(entity_data):
+            self.CreateEntity(entity_data)
 
     def break_entity(self, entity_data):
-        if self.entity_exists(entity_data):
-            self.break_entity(entity_data)
+        if self.EntityExists(entity_data):
+            self.DestroyEntity(entity_data)
 
     def EntityExists(entity_data):
         raise NotImplementedError("Op.EntityExists method is not defined")
