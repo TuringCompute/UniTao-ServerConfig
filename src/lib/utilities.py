@@ -17,7 +17,6 @@ class Util:
 
     def run_command(command: list[str]):
         cmd_str = " ".join(command)
-        print("command " + cmd_str)
         try:
             result = subprocess.run(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
             if result.returncode != 0:
