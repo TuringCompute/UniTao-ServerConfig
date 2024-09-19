@@ -17,7 +17,7 @@ def veth_exists(veth_data):
     veth0, veth1 = parse_data(veth_data)
     veth_name1 = "{0}@{1}".format(veth0, veth1)
     veth_name2 = "{0}@{1}".format(veth1, veth0)
-    result = Util.run_command(['ip', 'link'])
+    result = Util.run_command(f"ip link")
     output = result.stdout
     if veth_name1 in output and veth_name2 in output:
         return True
@@ -30,8 +30,7 @@ def veth_create(veth_data):
     Util.run_command(f"ip link set {veth_data["veth1"]} up")
 
 def veth_destroy(veth_data):
-    iplink_cmd = ['ip', 'link', 'delete', veth_data["veth0"]]
-    Util.run_command(iplink_cmd)
+    Util.run_command(f"ip link delete {veth_data["veth0"]}")
 
 def init_veth_op() -> EntityOp:
     veth_op = EntityOp()
