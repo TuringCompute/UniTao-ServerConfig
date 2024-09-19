@@ -15,14 +15,14 @@ class Util:
             print(f"Error: The file '{file_path}' is not a valid JSON file.")
             sys.exit(-3)
 
-    def run_command(command: list[str]):
-        cmd_str = " ".join(command)
+    def run_command(command: str):
+        cmd_list = command.split()
         try:
-            result = subprocess.run(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+            result = subprocess.run(cmd_list, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
             if result.returncode != 0:
-                print(f"Error: command [{cmd_str}] run failed with error:{result.stderr}")
+                print(f"Error: command [{command}] run failed with error:{result.stderr}")
                 sys.exit(-9)
             return result
         except Exception as e:
-            print(f"Error: Command [{cmd_str}] got an error: {e}")
+            print(f"Error: Command [{command}] got an error: {e}")
             sys.exit(-8)

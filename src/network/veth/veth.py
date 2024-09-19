@@ -25,8 +25,9 @@ def veth_exists(veth_data):
         return False
 
 def veth_create(veth_data):
-    iplink_cmd = ['ip', 'link', 'add', veth_data["veth0"], 'type', 'veth', 'peer', 'name', veth_data["veth1"]]
-    Util.run_command(iplink_cmd)
+    Util.run_command(f"ip link add {veth_data["veth0"]} type veth peer name {veth_data["veth1"]}")
+    Util.run_command(f"ip link set {veth_data["veth0"]} up")
+    Util.run_command(f"ip link set {veth_data["veth1"]} up")
 
 def veth_destroy(veth_data):
     iplink_cmd = ['ip', 'link', 'delete', veth_data["veth0"]]
