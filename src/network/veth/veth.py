@@ -7,8 +7,10 @@ from lib.utilities import Util
 def veth_op(veth_data):
     op = veth_data.get("op", None)
     if op == "set":
+        print("set veth link pair")
         veth_set(veth_data)
     elif op == "delete":
+        print("delete veth link pair")
         veth_delete(veth_data)
     elif op is None:
         print("Error: Missing field [op] from JSON data")
