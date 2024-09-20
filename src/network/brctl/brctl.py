@@ -9,7 +9,7 @@ from lib.entity import EntityOp, Entity
 
 class LinuxBridge(Entity):
     def __init__(self, br_data: dict):
-        super.__init__(br_data)
+        super().__init__(br_data)
         self.Type = br_data.get("type", None)
         if self.Type is None:
             raise ValueError("Error: missing field [type] to specify bridge type. expected [LinuxBridge, OVSBridge]")
