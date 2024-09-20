@@ -18,8 +18,6 @@ class LinuxBridge(Entity):
         self.Name = br_data.get("name", None)
         if self.Name is None:
             raise ValueError("Error: missing field [name] to specify bridge name.")
-        if not isinstance(self.PreExists, bool):
-            raise ValueError("Error: invalid value of preexists, expect bool [true, false]")  
         self.Interfaces = br_data.get("interfaces", None)
         if self.Interfaces is None:
             raise ValueError("Error: missing field [links] to specify links to be add to the bridge")
