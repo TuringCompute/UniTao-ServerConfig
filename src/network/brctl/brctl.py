@@ -20,9 +20,9 @@ class LinuxBridge(Entity):
             raise ValueError("Error: missing field [name] to specify bridge name.")
         self.Interfaces = br_data.get("interfaces", None)
         if self.Interfaces is None:
-            raise ValueError("Error: missing field [links] to specify links to be add to the bridge")
-        if not isinstance(self.Links, list):
-            raise ValueError(f"Error: invalid value for links={self.Links}, expect a list of link names")
+            raise ValueError("Error: missing field [interfaces] to specify links to be add to the bridge")
+        if not isinstance(self.Interfaces, list):
+            raise ValueError(f"Error: invalid value for links={self.Interfaces}, expect a list of link names")
 
 
 class BrCtlOp(EntityOp):
