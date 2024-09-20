@@ -83,9 +83,7 @@ class BrCtlOp(EntityOp):
     @staticmethod
     def __list_interface(br_name: str):
         result = Util.run_command(f"brctl show {br_name}")
-        # Parse the output and print bridge names
-        lines = result.stdout.splitlines()[1:]  
-        
+        lines = result.stdout.splitlines()
         interfaces = []
         # Skip the header line
         for line in lines[1:]:
@@ -93,7 +91,7 @@ class BrCtlOp(EntityOp):
             # If the line starts with the bridge name, it has the interfaces
             if parts[0] == br_name:
                 # The first interface is in the 4th column, subsequent interfaces are on following lines
-                interfaces.append(parts[3:])
+                interfaces.append(parts[3])
             else:
                 interfaces.append(parts[0])
         return interfaces
