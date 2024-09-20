@@ -1,34 +1,27 @@
 class Keyword:
-    OP = "op"
+    State = "state"
     MAKE = "make"
     BREAK = "break"
 
+class Entity:
+    def __init__(self, entity_data: dict):
+        if Keyword.State not in entity_data:
+            raise ValueError(f"Error: field [{Keyword.State}] is required. to specify the intended state")
+        self.State = entity_data.get(Keyword.State, None)
+        if self.State not in [Keyword.MAKE, Keyword.BREAK]:
+            raise ValueError(f"Error: field [{Keyword.State}] has invalid value [{self.State}], expect [{Keyword.MAKE} or {Keyword.BREAK}]")
+
+
 class EntityOp:
-    def make_entity(self, entity_data):
-        if not self.EntityExists(entity_data):
-            self.CreateEntity(entity_data)
+    def MakeEntity(self, entity):
+        raise NotImplemented("Error: method make_entity not implemented ")
 
-    def break_entity(self, entity_data):
-        if self.EntityExists(entity_data):
-            self.DestroyEntity(entity_data)
+    def BreakEntity(self, entity):
+        raise NotImplemented("Error: method break_entity not implemented ")
 
-    def EntityExists(entity_data):
-        raise NotImplementedError("Op.EntityExists method is not defined")
-
-    def CreateEntity(entity_data):
-        raise NotImplementedError("Op.CreateEntity method is not defined")
-
-    def DestroyEntity(entity_data):
-        raise NotImplementedError("Op.DestroyEntity method is not defined")
-
-    def Run(self, op_data: dict):
-        if Keyword.OP not in op_data:
-            raise Exception(f"Error: field [{Keyword.OP}] is required.")
-        op_type = op_data.get(Keyword.OP, None)
-        if op_type == Keyword.MAKE:
-            self.make_entity(op_data)
-        elif op_type == Keyword.BREAK:
-            self.break_entity(op_data)
-        else:
-            raise Exception(f"Error: unknown [{Keyword.OP}]='{op_type}'")
+    def Run(self, entity: Entity):
+        if entity.State == Keyword.MAKE:
+            self.MakeEntity(entity)
+            return
+        self.BreakEntity(entity)
         

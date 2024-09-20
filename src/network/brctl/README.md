@@ -12,4 +12,13 @@ operate on linux bridges
  - brctl addif {bridge} {device}
  - brctl delif {bridged} {device}
 
+### data schema
+```jsonc
+{
+    "op": "make",               // make or break for create or destroy the entity
+    "type": "LinuxBridge",      // LinuxBridge for brctl operation
+    "name": "bridge name",      // LinuxBridge name to be created
+    "interfaces": []                 // list of link to be add to this bridge
+}
+```
 
