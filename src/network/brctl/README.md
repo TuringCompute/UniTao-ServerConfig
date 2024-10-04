@@ -15,7 +15,7 @@ operate on linux bridges
 ### data schema
 ```jsonc
 {
-    "op": "make",               // make or break for create or destroy the entity
+    "state": "make",               // make or break for create or destroy the entity
     "type": "LinuxBridge",      // LinuxBridge for brctl operation
     "name": "bridge name",      // LinuxBridge name to be created
     "interfaces": []                 // list of link to be add to this bridge
