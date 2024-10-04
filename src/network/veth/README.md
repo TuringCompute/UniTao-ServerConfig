@@ -14,7 +14,7 @@ to detect if veth link pair exists.
 ### Schema
 ```jsonc
 {
-    "op": "make",             // value [make, break]
+    "state": "make",             // value [make, break]
     "veth0": "veth-if01",     // name of 1st end of veth link
     "veth1": "veth-br01"      // name of 2nd end of veth link 
 }
