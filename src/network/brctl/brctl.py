@@ -91,7 +91,8 @@ class BrCtlOp(EntityOp):
             # If the line starts with the bridge name, it has the interfaces
             if parts[0] == br_name:
                 # The first interface is in the 4th column, subsequent interfaces are on following lines
-                interfaces.append(parts[3])
+                if len(parts) > 3:
+                    interfaces.append(parts[3])
             else:
                 interfaces.append(parts[0])
         return interfaces
@@ -102,6 +103,7 @@ def parse_args():
     parser.add_argument("--data", type=str, help="Linux Bridge data to make in json format", required=True)
     args = parser.parse_args()
     return args
+
 
 if __name__ == "__main__":
     args = parse_args()
