@@ -18,6 +18,7 @@ operate on linux bridges
     "state": "make",               // make or break for create or destroy the entity
     "type": "LinuxBridge",      // LinuxBridge for brctl operation
     "name": "bridge name",      // LinuxBridge name to be created
+    "macAddress": "d6:60:50:0b:83:10",      // specify mac address for the bridge
     "interfaces": []                 // list of link to be add to this bridge
 }
 ```

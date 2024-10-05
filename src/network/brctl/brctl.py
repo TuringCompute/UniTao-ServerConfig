@@ -8,19 +8,30 @@ from lib.entity import EntityOp, Entity
 
 
 class LinuxBridge(Entity):
+    class Keywords:
+        Interfaces = "interfaces"
+        LinuxBridge = "LinuxBridge"
+        MacAddress = "macAddress"
+        Name = "name"
+        OVSBridge = "OVSBridge"
+        Type = "type"
+
+
+
     def __init__(self, br_data: dict):
         super().__init__(br_data)
-        self.Type = br_data.get("type", None)
+        self.Type = br_data.get(self.Keywords.Type, None)
         if self.Type is None:
-            raise ValueError("Error: missing field [type] to specify bridge type. expected [LinuxBridge, OVSBridge]")
-        if self.Type != "LinuxBridge":
-            raise ValueError(f"Error: invalid bridge type={self.Type}. expected [LinuxBridge, OVSBridge]")
-        self.Name = br_data.get("name", None)
+            raise ValueError(f"Error: missing field [{self.Keywords.Type}] to specify bridge type. expected [{self.Keywords.LinuxBridge}, {self.Keywords.OVSBridge}]")
+        if self.Type != self.Keywords.LinuxBridge:
+            raise ValueError(f"Error: invalid bridge type={self.Type}. expected [{self.Keywords.LinuxBridge}, {self.Keywords.OVSBridge}]")
+        self.Name = br_data.get(self.Keywords.Name, None)
         if self.Name is None:
-            raise ValueError("Error: missing field [name] to specify bridge name.")
-        self.Interfaces = br_data.get("interfaces", None)
+            raise ValueError(f"Error: missing field [{self.Keywords.Name}] to specify bridge name.")
+        self.MacAddress = br_data.get(self.Keywords.MacAddress, None)
+        self.Interfaces = br_data.get(self.Keywords.Interfaces, None)
         if self.Interfaces is None:
-            raise ValueError("Error: missing field [interfaces] to specify links to be add to the bridge")
+            raise ValueError(f"Error: missing field [{self.Keywords.Interfaces}] to specify links to be add to the bridge")
         if not isinstance(self.Interfaces, list):
             raise ValueError(f"Error: invalid value for links={self.Interfaces}, expect a list of link names")
 
@@ -30,6 +41,7 @@ class BrCtlOp(EntityOp):
         br_list = BrCtlOp.ListBridge()
         if br_entity.Name not in br_list:
             BrCtlOp.CreateLinuxBridge(br_entity.Name)
+            BrCtlOp.SetDeviceMac(br_entity.Name, br_entity.MacAddress)
         BrCtlOp.SetInterfaces(br_entity.Name, br_entity.Interfaces)
 
 
@@ -51,6 +63,26 @@ class BrCtlOp(EntityOp):
     @staticmethod
     def CreateLinuxBridge(br_name: str):
         Util.run_command(f"brctl addbr {br_name}")
+
+
+    @staticmethod
+    def GetDeviceMacAddress(br_name: str):
+        result = Util.run_command(f"ip addr show dev {br_name}")
+        lines = result.stdout.splitlines()
+        for line in lines:
+            if "link/ether" in line:
+                line_parts = line.split()
+                return line_parts[1]  # The MAC address is the second word in the line
+        return ""
+
+
+    @staticmethod
+    def SetDeviceMac(br_name: str, address: str):
+        if address is None:
+            return
+        current_mac = BrCtlOp.GetDeviceMacAddress(br_name)
+        if current_mac != address:
+            Util.run_command(f"ip link set dev {br_name} address {address}")
 
 
     @staticmethod
