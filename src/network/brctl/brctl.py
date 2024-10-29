@@ -55,7 +55,7 @@ class BrCtlOp(EntityOp):
     def ListBridge():
         result = Util.run_command("brctl show")
         # Parse the output and print bridge names
-        lines = result.stdout.splitlines()[1:]  # Skip the header line
+        lines = result.stdout_lines[1:]  # Skip the header line
         bridges = [line.split()[0] for line in lines if line]  # Get the first column (bridge name)
         return bridges
 
@@ -115,10 +115,9 @@ class BrCtlOp(EntityOp):
     @staticmethod
     def __list_interface(br_name: str):
         result = Util.run_command(f"brctl show {br_name}")
-        lines = result.stdout.splitlines()
         interfaces = []
         # Skip the header line
-        for line in lines[1:]:
+        for line in result.stdout_lines[1:]:
             parts = line.split()
             # If the line starts with the bridge name, it has the interfaces
             if parts[0] == br_name:
