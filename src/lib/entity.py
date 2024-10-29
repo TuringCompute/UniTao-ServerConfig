@@ -1,13 +1,15 @@
 class Keyword:
+    Name = "name"
     State = "state"
     Status = "status"
     MAKE = "make"
     BREAK = "break"
 
-class Status:
-    Active = "active"
-    Deleted = "deleted"
-    Error = "error"
+    class EntityStatus:
+        Active = "active"
+        Deleted = "deleted"
+        Error = "error"
+
 
 class Entity:
     def __init__(self, entity_data: dict):
@@ -16,9 +18,8 @@ class Entity:
         self.State = entity_data.get(Keyword.State, None)
         if self.State not in [Keyword.MAKE, Keyword.BREAK]:
             raise ValueError(f"Error: field [{Keyword.State}] has invalid value [{self.State}], expect [{Keyword.MAKE} or {Keyword.BREAK}]")
-        self.Status = entity_data.get(Keyword.Status, Status.Active)
+        self.Status = entity_data.get(Keyword.Status, Keyword.EntityStatus.Active)
         
-
 
 class EntityOp:
     def MakeEntity(self, entity):
@@ -28,6 +29,8 @@ class EntityOp:
         raise NotImplemented("Error: method break_entity not implemented ")
 
     def Run(self, entity: Entity):
+        if entity.Status != Keyword.EntityStatus.Active:
+            return
         if entity.State == Keyword.MAKE:
             self.MakeEntity(entity)
             return
