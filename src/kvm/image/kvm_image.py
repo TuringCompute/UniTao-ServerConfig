@@ -14,7 +14,7 @@ class KvmImage(Entity):
         DownloadLink = "downloadLink"
         BaseImagePath = "baseImagePath"
 
-        class ImageFormat:
+        class Format:
             Img = "img"
             QCOW2 = "qcow2"
 
@@ -23,8 +23,8 @@ class KvmImage(Entity):
         self.ImageFormat = entity_data.get(self.Keyword.ImageFormat, None)
         if self.ImageFormat is None:
             raise ValueError(f"Error: missing field [{self.Keyword.ImageFormat}] to specify which the file format the image is using")
-        if self.ImageFormat not in [self.Keyword.ImageFormat.Img, self.Keyword.ImageFormat.QCOW2]:
-            raise ValueError(f"Error: Invalid {self.Keyword.ImageFormat}=[{self.ImageFormat}, only support[{self.Keyword.ImageFormat.Img}, {self.Keyword.ImageFormat.QCOW2}]")
+        if self.ImageFormat not in [self.Keyword.Format.Img, self.Keyword.Format.QCOW2]:
+            raise ValueError(f"Error: Invalid {self.Keyword.ImageFormat}=[{self.ImageFormat}, only support[{self.Keyword.Format.Img}, {self.Keyword.Format.QCOW2}]")
         self.Name = entity_data.get(Keyword.Name, None)
         if self.Name is None:
             raise ValueError(f"Error: missing field [{Keyword.Name}] for the image")
@@ -86,9 +86,9 @@ class KvmImageOp(EntityOp):
 
     @staticmethod
     def ImageFormatCmd(image_format):
-        if image_format == KvmImage.Keyword.ImageFormat.Img:
+        if image_format == KvmImage.Keyword.Format.Img:
             return "-f raw"
-        elif image_format == KvmImage.Keyword.ImageFormat.QCOW2:
+        elif image_format == KvmImage.Keyword.Format.QCOW2:
             return "-f qcow2"
 
     @staticmethod
