@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 import argparse
 import os
+from extlib import wget
 
 from lib.utilities import Util
 from lib.entity import Entity, EntityOp, Keyword
@@ -93,8 +94,8 @@ class KvmImageOp(EntityOp):
 
     @staticmethod
     def DownloadImage(image: KvmImage):
-        cmd = f"wget -O {image.FilePath()} {image.DownloadLink}"
-        Util.run_command(cmd)
+        wget.download(url=image.DownloadLink, out=image.FilePath())
+
 
     @staticmethod
     def Destroy(image: KvmImage):

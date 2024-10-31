@@ -1,5 +1,6 @@
 # ignore list for pycharm
 .idea/*
+extlib/*
 
 # From here down are generated from python ignore template, 
 # Byte-compiled / optimized / DLL files
