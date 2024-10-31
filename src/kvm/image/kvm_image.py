@@ -3,9 +3,9 @@ import argparse
 import os
 from extlib import wget
 
-from lib.utilities import Util
-from lib.entity import Entity, EntityOp, Keyword
-from lib.logger import Log
+from shared.utilities import Util
+from shared.entity import Entity, EntityOp, Keyword
+from shared.logger import Log
 
 
 logger = Log.get_logger("kvm_image")

@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 import argparse
 
-from lib.utilities import Util
-from lib.entity import Entity, EntityOp
+from shared.utilities import Util
+from shared.entity import Entity, EntityOp
 
 class Veth(Entity):
     def __init__(self, entity_data: dict):

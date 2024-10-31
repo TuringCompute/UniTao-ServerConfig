@@ -3,8 +3,8 @@
 import argparse
 
 
-from lib.utilities import Util
-from lib.entity import EntityOp, Entity
+from shared.utilities import Util
+from shared.entity import EntityOp, Entity
 
 
 class LinuxBridge(Entity):
@@ -114,7 +114,7 @@ class BrCtlOp(EntityOp):
 
     @staticmethod
     def __list_interface(br_name: str):
-        result = Util.run_command(f"brctl show {br_name}")
+        result = Util.srun_command(f"brctl show {br_name}")
         interfaces = []
         # Skip the header line
         for line in result.stdout_lines[1:]:
