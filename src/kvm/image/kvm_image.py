@@ -5,6 +5,10 @@ from extlib import wget
 
 from lib.utilities import Util
 from lib.entity import Entity, EntityOp, Keyword
+from lib.logger import Log
+
+
+logger = Log.get_logger("kvm_image")
 
 
 class KvmImage(Entity):
@@ -63,6 +67,7 @@ class KvmImage(Entity):
 class KvmImageOp(EntityOp):
     def MakeEntity(self, image: KvmImage):
         if not image.Exists():
+            logger.info("Image does not exists. Create one")
             KvmImageOp.Create(image)
     
     def BreakEntity(self, image: KvmImage):
@@ -94,6 +99,8 @@ class KvmImageOp(EntityOp):
 
     @staticmethod
     def DownloadImage(image: KvmImage):
+        file_path = image.FilePath()
+        logger.info(f"download as file:{file_path} from {image.DownloadLink}")
         wget.download(url=image.DownloadLink, out=image.FilePath())
 
 
