@@ -1,3 +1,5 @@
+import argparse
+
 class Keyword:
     Name = "name"
     State = "state"
@@ -22,17 +24,35 @@ class Entity:
         
 
 class EntityOp:
+    @staticmethod
+    def parse_args(app_title:str) -> argparse.Namespace:
+        parser = argparse.ArgumentParser(description=f"{app_title} Operations")
+        parser.add_argument("--desired", type=str, help=f"{app_title} desired state data json file", required=True)
+        parser.add_argument("--current", type=str, help=f"{app_title} current state data json file", required=True)
+        args = parser.parse_args()
+        return args
+
+    def __init__(self, current: Entity=None):
+        self.current = current
+        if self.current is not None:
+            self.SyncCurrent()
+
+    def SyncCurrent(self):
+        raise NotImplemented("Error: method SyncCurrent not implemented")
+
     def MakeEntity(self, entity):
-        raise NotImplemented("Error: method make_entity not implemented ")
+        raise NotImplemented("Error: method MakeEntity not implemented ")
 
     def BreakEntity(self, entity):
-        raise NotImplemented("Error: method break_entity not implemented ")
+        raise NotImplemented("Error: method BreakEntity not implemented ")
 
-    def Run(self, entity: Entity):
-        if entity.Status != Keyword.EntityStatus.Active:
+    def Run(self, desired: Entity, current: Entity=None):
+        if current is not None:
+            current = self.SyncCurrentState(current)
+        if desired.Status != Keyword.EntityStatus.Active:
             return
-        if entity.State == Keyword.MAKE:
-            self.MakeEntity(entity)
+        if desired.State == Keyword.MAKE:
+            self.MakeEntity(current)
             return
-        self.BreakEntity(entity)
+        self.BreakEntity(current)
         

@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-import argparse
 import os
 from extlib import wget
 
@@ -110,16 +109,11 @@ class KvmImageOp(EntityOp):
         Util.run_command(f"rm -rf {image_file_path}")
 
 
-def parse_args():
-    parser = argparse.ArgumentParser(description="Operate on KVM image files. (img, qcow2)")
-    parser.add_argument("--data", type=str, help="image data in json format", required=True)
-    args = parser.parse_args()
-    return args
-
-
 if __name__ == "__main__":
-    args = parse_args()
-    json_data = Util.read_json_file(args.data)
+    args = EntityOp.parse_args("KVM Image")
+    desired_data = Util.read_json_file(args.desired)
+    current_data = Util.read_json_file(args.current) if args.current is not None else None
     image_op = KvmImageOp()
-    image_data = KvmImage(json_data)
-    image_op.Run(image_data)
+
+    desired_state = KvmImage(desired_data)
+    image_op.Run(desired_data, current_data)
