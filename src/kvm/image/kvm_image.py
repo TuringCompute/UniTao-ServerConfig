@@ -54,7 +54,10 @@ class KvmImage(Entity):
 
 
     def Exists(self):
-        return os.path.exists(self.FilePath())
+        file_path = self.FilePath()
+        logger.info(f"Check Image File:[{file_path}]")
+        return os.path.exists(file_path)
+            
         
     def __filename(self):
         return f"{self.Name}.{self.ImageFormat}"
