@@ -28,7 +28,7 @@ class EntityOp:
     def parse_args(app_title:str) -> argparse.Namespace:
         parser = argparse.ArgumentParser(description=f"{app_title} Operations")
         parser.add_argument("--desired", type=str, help=f"{app_title} desired state data json file", required=True)
-        parser.add_argument("--current", type=str, help=f"{app_title} current state data json file", required=True)
+        parser.add_argument("--current", type=str, help=f"{app_title} current state data json file", required=False)
         args = parser.parse_args()
         return args
 
