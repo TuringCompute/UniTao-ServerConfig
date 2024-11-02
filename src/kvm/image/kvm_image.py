@@ -116,4 +116,5 @@ if __name__ == "__main__":
     image_op = KvmImageOp()
 
     desired_state = KvmImage(desired_data)
-    image_op.Run(desired_data, current_data)
+    current_state = KvmImage(current_data) if current_data is not None else None
+    image_op.Run(desired_state, current_state)
