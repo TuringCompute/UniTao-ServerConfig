@@ -68,6 +68,7 @@ class ParamEntityProvider(EntityProvider):
     def LoadStates(self):
         if self.StateLoaded:
             return
+        self.log.info(f"load states from current:[{self.Params.current}], desired:[{self.Params.desired}]")
         desired_data = Util.read_json_file(self.Params.desired) if os.path.exists(self.Params.desired) else None
         current_data = Util.read_json_file(self.Params.current) if os.path.exists(self.Params.current) else None
         self.Desired = self.EntityClass(desired_data) if desired_data is not None else None
