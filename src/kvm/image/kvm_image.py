@@ -94,7 +94,7 @@ class KvmImageOp(EntityOp):
         current_image.Status = Keyword.EntityStatus.Deleted
 
     @classmethod
-    def ChangeFunctions(cls) -> list[callable[Entity, Entity]]:
+    def ChangeFunctions(cls) -> list[callable[[Entity, Entity], Entity]]:
         return [
             KvmImageOp.ChangeFilePath,
             KvmImageOp.RebuildImage
