@@ -21,7 +21,10 @@ class Entity:
     def __init__(self, entity_data: dict):
         self.Status = entity_data.get(Keyword.Status, Keyword.EntityStatus.Active)
 
-    def to_json(self) -> dict:
+    def to_json(self, data: dict=None) -> dict:
+        if data is not None:
+            data[Keyword.Status] = self.Status
+            return data
         raise NotImplemented(f"Error: method [to_json] not implemented for class {self.__class__.__name__}")
 
 class EntityProvider:

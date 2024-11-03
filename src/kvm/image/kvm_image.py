@@ -54,19 +54,20 @@ class KvmImage(Entity):
             if self.ImageSize is not None and type(self.ImageSize) is not int:
                 raise ValueError(f"Error: invalid value of field [{self.Keyword.SizeInGB}]={self.ImageSize}, expect integer here")
 
-    def to_json(self) -> dict:
-        json_data = {
+    def to_json(self, data: dict=None) -> dict:
+        json_data = data if data is not None else {}
+        json_data.update({
             Keyword.Name: self.Name,
             self.Keyword.ImageFormat: self.ImageFormat,
             self.Keyword.ImagePath: self.ImagePath
-        }
+        })
         if self.DownloadLink is not None:
             json_data[self.Keyword.DownloadLink] = self.DownloadLink
         if self.BaseImage is not None:
             json_data[self.Keyword.BaseImagePath]=self.BaseImage
         if self.ImageSize is not None:
             json_data[self.Keyword.SizeInGB] = self.ImageSize
-        return json_data
+        return super().to_json(json_data)
 
     def Exists(self):
         file_path = self.FilePath()
@@ -77,6 +78,7 @@ class KvmImage(Entity):
     def __filename(self):
         return f"{self.Name}.{self.ImageFormat}"
     
+
     def FilePath(self):
         return os.path.join(self.ImagePath, self.__filename())
 
