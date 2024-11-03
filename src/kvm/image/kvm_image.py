@@ -87,6 +87,7 @@ class KvmImageOp(EntityOp):
         if not desired_image.Exists():
             logger.info("Image does not exists. Create one")
             KvmImageOp.Create(desired_image)
+        return desired_image
 
     @staticmethod
     def DestroyEntity(current_image: KvmImage) -> KvmImage:
