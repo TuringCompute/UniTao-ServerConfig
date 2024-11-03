@@ -46,7 +46,7 @@ class EntityOp:
     def Run(cls, current: Entity, desired: Entity) -> Entity:
         if current is not None:
             cls.SyncCurrent(current)
-        if desired is None:            
+        if desired is None or desired.Status == Keyword.EntityStatus.Deleted:
             cls.BreakEntity(current)
         else:
             new_entity = cls.MakeEntity(current, desired)
