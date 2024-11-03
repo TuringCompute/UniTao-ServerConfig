@@ -3,6 +3,7 @@ import os
 import json
 
 from shared.utilities import Util
+from typing import Type
 
 
 class Keyword:
@@ -26,8 +27,9 @@ class Entity:
         raise NotImplemented(f"Error: method [to_json] not implemented for class {self.__class__.__name__}")
 
 class EntityProvider:
-    def __init__(self, app_name: str):
+    def __init__(self, app_name: str, entity_class: Type[Entity], ):
         self.AppName = app_name
+        self.EntityClass = entity_class
         pass
 
     def GetStates(self) -> tuple[Entity, Entity]:
@@ -54,8 +56,8 @@ class ParamEntityProvider(EntityProvider):
         args = parser.parse_args()
         return args
 
-    def __init__(self, app_name: str):
-        super().__init__(app_name)
+    def __init__(self, app_name: str, entity_class: Type[Entity], ):
+        super().__init__(app_name, entity_class)
         args = ParamEntityProvider.parse_args(app_name)
         self.Params = args
         self.Current = None
@@ -67,8 +69,8 @@ class ParamEntityProvider(EntityProvider):
             return
         desired_data = Util.read_json_file(self.Params.desired)
         current_data = Util.read_json_file(self.Params.current) if os.path.exists(self.Params.current) else None
-        self.Desired = self.cls_entity(desired_data)
-        self.Current = self.cls_entity(current_data) if current_data is not None else None
+        self.Desired = self.EntityClass(desired_data)
+        self.Current = self.EntityClass(current_data) if current_data is not None else None
         self.StateLoaded = True
 
     def GetStates(self) -> tuple[Entity, Entity]:

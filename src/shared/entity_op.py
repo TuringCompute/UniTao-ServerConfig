@@ -55,10 +55,9 @@ class EntityOp:
         return current
     
 class EntityOpRunner:
-    def __init__(self, entity_class: Type[Entity], entity_op_class: Type[EntityOp], state_provider: EntityProvider):
-        self.cls_entity = entity_class
-        self.cls_entity_op = entity_op_class
-        self.entity_op = self.cls_entity_op()
+    def __init__(self, entity_op_class: Type[EntityOp], state_provider: EntityProvider):
+        self.EntityOpClass = entity_op_class
+        self.entity_op = self.EntityOpClass()
         self.state_provider = state_provider
 
     def Run(self):

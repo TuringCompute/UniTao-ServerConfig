@@ -163,6 +163,6 @@ class KvmImageOp(EntityOp):
 
 
 if __name__ == "__main__":
-    state_provider = ParamEntityProvider("KVM Image")
-    runner = EntityOpRunner(KvmImage, KvmImageOp, state_provider)
+    state_provider = ParamEntityProvider("KVM Image", KvmImage)
+    runner = EntityOpRunner(KvmImageOp, state_provider)
     runner.Run()
