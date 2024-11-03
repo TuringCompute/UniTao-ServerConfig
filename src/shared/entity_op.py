@@ -1,6 +1,6 @@
 from shared.entity import Entity, EntityProvider, Keyword
 
-from typing import Type
+from typing import Type, Callable, List
 
 
 class EntityOp:
@@ -39,7 +39,7 @@ class EntityOp:
         return False
 
     @classmethod
-    def ChangeFunctions(cls) -> list[callable[[Entity, Entity], Entity]]:
+    def ChangeFunctions(cls) -> List[Callable[[Entity, Entity], Entity]]:
         raise NotImplemented("Error: Method ChangeFunctions not implemented")
 
     @classmethod
