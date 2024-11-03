@@ -1,9 +1,11 @@
 #!/usr/bin/env python3
 import os
+import copy
 from extlib import wget
 
 from shared.utilities import Util
-from shared.entity import Entity, EntityOp, Keyword
+from shared.entity import Entity, ParamEntityProvider, Keyword
+from shared.entity_op import EntityOp, EntityOpRunner
 from shared.logger import Log
 
 
@@ -52,6 +54,19 @@ class KvmImage(Entity):
             if self.ImageSize is not None and type(self.ImageSize) is not int:
                 raise ValueError(f"Error: invalid value of field [{self.Keyword.SizeInGB}]={self.ImageSize}, expect integer here")
 
+    def to_json(self) -> dict:
+        json_data = {
+            Keyword.Name: self.Name,
+            self.Keyword.ImageFormat: self.ImageFormat,
+            self.Keyword.ImagePath: self.ImagePath
+        }
+        if self.DownloadLink is not None:
+            json_data[self.Keyword.DownloadLink] = self.DownloadLink
+        if self.BaseImage is not None:
+            json_data[self.Keyword.BaseImagePath]=self.BaseImage
+        if self.ImageSize is not None:
+            json_data[self.Keyword.SizeInGB] = self.ImageSize
+        return json_data
 
     def Exists(self):
         file_path = self.FilePath()
@@ -67,20 +82,56 @@ class KvmImage(Entity):
 
 
 class KvmImageOp(EntityOp):
-    def MakeEntity(self, image: KvmImage):
-        if not image.Exists():
+    def CreateEntity(self, desired_image: KvmImage):
+        if not desired_image.Exists():
             logger.info("Image does not exists. Create one")
-            KvmImageOp.Create(image)
-    
-    def BreakEntity(self, image: KvmImage):
-        if image.Exists():
-            KvmImageOp.Destroy(image)
+            KvmImageOp.Create(desired_image)
+
+    @staticmethod
+    def DestroyEntity(current_image: KvmImage) -> KvmImage:
+        if current_image.Exists():
+            KvmImageOp.Destroy(current_image)
+        current_image.Status = Keyword.EntityStatus.Deleted
+
+    @classmethod
+    def ChangeFunctions(cls) -> list:
+        return [
+            KvmImageOp.ChangeFilePath,
+            KvmImageOp.RebuildImage
+        ]
+
+    @staticmethod
+    def ChangeFilePath(current_image: KvmImage, desired_image: KvmImage) -> KvmImage:
+        new_image = copy.deepcopy(current_image)
+        desired_file_path = desired_image.FilePath()
+        current_file_path = current_image.FilePath()
+        if current_file_path != desired_file_path:
+            if desired_image.ImagePath != current_image.ImagePath:
+                Util.run_command(f"mkdir -p {desired_image.ImagePath}")
+            Util.run_command(f"mv {current_file_path} {desired_file_path}")
+            new_image.ImagePath = desired_image.ImagePath
+            new_image.Name = desired_image.Name
+            return new_image
+        return None
+
+    @staticmethod
+    def RebuildImage(current_image: KvmImage, desired_image: KvmImage) -> KvmImage:
+        if current_image.ImageFormat != desired_image.ImageFormat or \
+            current_image.BaseImage != desired_image.BaseImage or \
+            current_image.DownloadLink != desired_image.DownloadLink or \
+            current_image.ImageSize != desired_image.ImageSize:
+            KvmImageOp.Destroy(current_image)
+            KvmImageOp.Create(desired_image)
+            return desired_image
+        return None
 
     @staticmethod
     def Create(image: KvmImage):
+        Util.run_command(f"mkdir -p {image.ImagePath}")
         if image.DownloadLink is not None:
             KvmImageOp.DownloadImage(image)
             return
+        KvmImageOp.GenerateImage(image)
 
     @staticmethod
     def GenerateImage(image: KvmImage):
@@ -105,7 +156,6 @@ class KvmImageOp(EntityOp):
         logger.info(f"download as file:{file_path} from {image.DownloadLink}")
         wget.download(url=image.DownloadLink, out=image.FilePath())
 
-
     @staticmethod
     def Destroy(image: KvmImage):
         image_file_path = image.FilePath()
@@ -113,11 +163,6 @@ class KvmImageOp(EntityOp):
 
 
 if __name__ == "__main__":
-    args = EntityOp.parse_args("KVM Image")
-    desired_data = Util.read_json_file(args.desired)
-    current_data = Util.read_json_file(args.current) if args.current is not None else None
-    image_op = KvmImageOp()
-
-    desired_state = KvmImage(desired_data)
-    current_state = KvmImage(current_data) if current_data is not None else None
-    image_op.Run(desired_state, current_state)
+    state_provider = ParamEntityProvider("KVM Image")
+    runner = EntityOpRunner(KvmImage, KvmImageOp, state_provider)
+    runner.Run()

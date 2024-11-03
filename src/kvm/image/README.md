@@ -16,7 +16,6 @@ This Image utility can be used to
 
  ```jsonc
 {
-    "state": "make",
     "imageFormat": "{qcow2/img}",       // the image file type  
     "name": "",                         // the image name, the file name will be defined as {name}.{imageFormat}
     "sizeInGB": 30,                     // optional, only use to create a new image with size requirement
