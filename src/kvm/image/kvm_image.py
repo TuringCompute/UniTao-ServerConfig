@@ -7,7 +7,7 @@ from shared.utilities import Util
 from shared.entity import Entity, ParamEntityProvider, Keyword
 from shared.entity_op import EntityOp, EntityOpRunner
 from shared.logger import Log
-
+from typing import List, Callable
 
 logger = Log.get_logger("kvm_image")
 
@@ -94,7 +94,7 @@ class KvmImageOp(EntityOp):
         current_image.Status = Keyword.EntityStatus.Deleted
 
     @classmethod
-    def ChangeFunctions(cls) -> list[callable[[Entity, Entity], Entity]]:
+    def ChangeFunctions(cls) -> List[Callable[[Entity, Entity], Entity]]:
         return [
             KvmImageOp.ChangeFilePath,
             KvmImageOp.RebuildImage
