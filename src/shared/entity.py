@@ -79,6 +79,7 @@ class ParamEntityProvider(EntityProvider):
         self.LoadStates()
         if not self.MatchStates(self.Current, self.Desired):
             return self.Current, self.Desired
+        self.log.info("Current state matches desired state")
         return None, None
 
     def SetCurrent(self, new_current: Entity):
