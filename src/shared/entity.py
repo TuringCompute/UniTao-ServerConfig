@@ -10,7 +10,6 @@ logger = Log.get_logger("Entity Lib")
 
 class Keyword:
     Name = "name"
-    State = "state"
     Status = "status"
 
     class EntityStatus:
@@ -21,8 +20,6 @@ class Keyword:
 
 class Entity:
     def __init__(self, entity_data: dict):
-        if Keyword.State not in entity_data:
-            raise ValueError(f"Error: field [{Keyword.State}] is required. to specify the intended state")
         self.Status = entity_data.get(Keyword.Status, Keyword.EntityStatus.Active)
 
     def to_json(self) -> dict:
