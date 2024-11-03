@@ -3,8 +3,10 @@ import os
 import json
 
 from shared.utilities import Util
+from shared.logger import Log
 from typing import Type
 
+logger = Log.get_logger("Entity Lib")
 
 class Keyword:
     Name = "name"
@@ -82,6 +84,7 @@ class ParamEntityProvider(EntityProvider):
         return None, None
 
     def SetCurrent(self, new_current: Entity):
+        logger.info(f"Save new_current @[{self.Params.current}]")
         state_file_dir = os.path.dirname(self.Params.current)
         Util.run_command(f"mkdir -p {state_file_dir}")
         current_data = new_current.to_json()
