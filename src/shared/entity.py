@@ -63,7 +63,7 @@ class ParamEntityProvider(EntityProvider):
         self.StateLoaded = False
 
     def LoadStates(self):
-        if self.StateRead:
+        if self.StateLoaded:
             return
         desired_data = Util.read_json_file(self.Params.desired)
         current_data = Util.read_json_file(self.Params.current) if os.path.exists(self.Params.current) else None
