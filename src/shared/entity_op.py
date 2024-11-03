@@ -64,7 +64,7 @@ class EntityOpRunner:
         while True:
             current, desired = self.state_provider.GetStates()
             if current is None and desired is None:
-                self.state_provider.log.info("both current and desired are none")
+                self.state_provider.log.info("No more work find, exit loop")
                 break
             self.state_provider.log.info("Run Entity Op from current -> desired")
             new_current = self.entity_op.Run(current, desired)
