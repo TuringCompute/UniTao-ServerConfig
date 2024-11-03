@@ -39,7 +39,7 @@ class EntityOp:
         return False
 
     @classmethod
-    def ChangeFunctions(cls) -> list[callable[Entity, Entity]]:
+    def ChangeFunctions(cls) -> list[callable[[Entity, Entity], Entity]]:
         raise NotImplemented("Error: Method ChangeFunctions not implemented")
 
     @classmethod
