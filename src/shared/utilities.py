@@ -47,6 +47,6 @@ class Util:
             return_code = process.wait()
             if return_code != 0:
                 raise SystemError(f"Error: command [{command}] run failed with error:{return_code}")
-            return Util.ProcessResult(return_code, stdout_lines, stderr_output)
+            return ProcessResult(return_code, stdout_lines, stderr_output)
         except Exception as e:
             raise SystemError(f"Error: Command [{command}] got an error: {e}")
