@@ -2,11 +2,10 @@ import argparse
 import os
 import json
 
+from logging import Logger
 from shared.utilities import Util
 from shared.logger import Log
 from typing import Type
-
-logger = Log.get_logger("Entity Lib")
 
 class Keyword:
     Name = "name"
@@ -26,7 +25,8 @@ class Entity:
         raise NotImplemented(f"Error: method [to_json] not implemented for class {self.__class__.__name__}")
 
 class EntityProvider:
-    def __init__(self, app_name: str, entity_class: Type[Entity], ):
+    def __init__(self, app_name: str, entity_class: Type[Entity], log: Logger):
+        self.log = log
         self.AppName = app_name
         self.EntityClass = entity_class
         pass
@@ -57,8 +57,8 @@ class ParamEntityProvider(EntityProvider):
         args = parser.parse_args()
         return args
 
-    def __init__(self, app_name: str, entity_class: Type[Entity], ):
-        super().__init__(app_name, entity_class)
+    def __init__(self, app_name: str, entity_class: Type[Entity], log: Logger):
+        super().__init__(app_name, entity_class, log)
         args = ParamEntityProvider.parse_args(app_name)
         self.Params = args
         self.Current = None
@@ -81,7 +81,7 @@ class ParamEntityProvider(EntityProvider):
         return None, None
 
     def SetCurrent(self, new_current: Entity):
-        logger.info(f"Save new_current @[{self.Params.current}]")
+        self.log.info(f"Save new_current @[{self.Params.current}]")
         state_file_dir = os.path.dirname(self.Params.current)
         Util.run_command(f"mkdir -p {state_file_dir}")
         current_data = new_current.to_json()
