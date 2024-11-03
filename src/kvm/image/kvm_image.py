@@ -82,7 +82,8 @@ class KvmImage(Entity):
 
 
 class KvmImageOp(EntityOp):
-    def CreateEntity(self, desired_image: KvmImage):
+    @staticmethod
+    def CreateEntity(desired_image: KvmImage):
         if not desired_image.Exists():
             logger.info("Image does not exists. Create one")
             KvmImageOp.Create(desired_image)
