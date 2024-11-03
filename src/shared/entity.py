@@ -40,6 +40,8 @@ class EntityProvider:
     
     @staticmethod
     def MatchStates(current: Entity, desired: Entity) -> bool:
+        if current is None or desired is None:
+            return False
         current_data = current.to_json()
         desired_data = desired.to_json()
         for key in desired_data.keys():
@@ -67,9 +69,9 @@ class ParamEntityProvider(EntityProvider):
     def LoadStates(self):
         if self.StateLoaded:
             return
-        desired_data = Util.read_json_file(self.Params.desired)
+        desired_data = Util.read_json_file(self.Params.desired) if os.path.exists(self.Params.desired) else None
         current_data = Util.read_json_file(self.Params.current) if os.path.exists(self.Params.current) else None
-        self.Desired = self.EntityClass(desired_data)
+        self.Desired = self.EntityClass(desired_data) if desired_data is not None else None
         self.Current = self.EntityClass(current_data) if current_data is not None else None
         self.StateLoaded = True
 
