@@ -42,8 +42,10 @@ class EntityProvider:
     
     @staticmethod
     def MatchStates(current: Entity, desired: Entity) -> bool:
-        if current is None or desired is None:
+        if current is None:
             return False
+        if desired is None and current.Status==Keyword.EntityStatus.Deleted:
+            return True
         current_data = current.to_json()
         desired_data = desired.to_json()
         for key in desired_data.keys():
