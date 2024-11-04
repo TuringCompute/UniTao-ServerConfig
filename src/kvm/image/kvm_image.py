@@ -143,7 +143,7 @@ class KvmImageOp(EntityOp):
 
     @staticmethod
     def GenerateImage(image: KvmImage):
-        cmd = f"qemu-img create {KvmImageOp.FormatCmd(image.ImageFormat)}"
+        cmd = f"qemu-img create {KvmImageOp.ImageFormatCmd(image.ImageFormat)}"
         if image.BaseImage is not None:
             cmd = f"{cmd} -b {image.BaseImage}"
         cmd = f"{cmd} {image.FilePath()}"
