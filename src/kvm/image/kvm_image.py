@@ -19,18 +19,26 @@ class KvmImage(Entity):
         SizeInGB = "sizeInGB"
         DownloadLink = "downloadLink"
         BaseImagePath = "baseImagePath"
+        BaseImageFormat = "baseImageFormat"
 
         class Format:
             Img = "img"
             QCOW2 = "qcow2"
+
+            @staticmethod
+            def list() -> List[str]:
+                return [
+                    KvmImage.Keyword.Format.Img,
+                    KvmImage.Keyword.Format.QCOW2
+                ]
 
     def __init__(self, entity_data: dict):
         super().__init__(entity_data)
         self.ImageFormat = entity_data.get(self.Keyword.ImageFormat, None)
         if self.ImageFormat is None:
             raise ValueError(f"Error: missing field [{self.Keyword.ImageFormat}] to specify which the file format the image is using")
-        if self.ImageFormat not in [self.Keyword.Format.Img, self.Keyword.Format.QCOW2]:
-            raise ValueError(f"Error: Invalid {self.Keyword.ImageFormat}=[{self.ImageFormat}, only support[{self.Keyword.Format.Img}, {self.Keyword.Format.QCOW2}]")
+        if self.ImageFormat not in self.Keyword.Format.list():
+            raise ValueError(f"Error: Invalid {self.Keyword.ImageFormat}=[{self.ImageFormat}, only support{self.Keyword.Format.list()}")
         self.Name = entity_data.get(Keyword.Name, None)
         if self.Name is None:
             raise ValueError(f"Error: missing field [{Keyword.Name}] for the image")
@@ -40,6 +48,7 @@ class KvmImage(Entity):
         self.ImageSize = entity_data.get(self.Keyword.SizeInGB, None)
         self.DownloadLink = entity_data.get(self.Keyword.DownloadLink, None)
         self.BaseImage = entity_data.get(self.Keyword.BaseImagePath, None)
+        self.BaseFormat = entity_data.get(self.Keyword.BaseImageFormat, None)
         if self.DownloadLink is not None:
             # meaning the image file is downloaded from URL. there should be no SizeInGB and BaseImagePath in data
             if self.ImageSize is not None:
@@ -53,6 +62,12 @@ class KvmImage(Entity):
                 raise ValueError(f"Error: to create image without base, we need to define image size")
             if self.ImageSize is not None and type(self.ImageSize) is not int:
                 raise ValueError(f"Error: invalid value of field [{self.Keyword.SizeInGB}]={self.ImageSize}, expect integer here")
+            if self.BaseImage is not None:
+                if self.BaseFormat is None:
+                    raise ValueError(f"Error: missing attribute {self.Keyword.BaseImageFormat} about base image {self.BaseImage}")
+                if self.BaseFormat not in self.Keyword.Format.list():
+                    raise ValueError(f"Error: Invalid {self.Keyword.BaseImageFormat}=[{self.BaseFormat}, only support {self.Keyword.Format.list()}")
+
 
     def to_json(self, data: dict=None) -> dict:
         json_data = data if data is not None else {}
@@ -73,14 +88,9 @@ class KvmImage(Entity):
         file_path = self.FilePath()
         logger.info(f"Check Image File:[{file_path}]")
         return os.path.exists(file_path)
-            
-        
-    def __filename(self):
-        return f"{self.Name}.{self.ImageFormat}"
-    
 
     def FilePath(self):
-        return os.path.join(self.ImagePath, self.__filename())
+        return os.path.join(self.ImagePath, self.Name)
 
 
 class KvmImageOp(EntityOp):

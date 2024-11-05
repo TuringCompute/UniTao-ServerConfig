@@ -21,6 +21,7 @@ This Image utility can be used to
     "sizeInGB": 30,                     // optional, only use to create a new image with size requirement
     "downloadLink": "",                 // optional, only use when need to download the image file from remote location
     "baseImagePath": "",                // optional, only use when need to create a new image with a baseline image
+    "baseImageFormat": "{qcow2/img}"
     "imagePath": ""                     // folder or path to store the image file
 }
  ```
