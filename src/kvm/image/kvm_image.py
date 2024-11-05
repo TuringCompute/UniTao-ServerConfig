@@ -156,9 +156,9 @@ class KvmImageOp(EntityOp):
 
     @staticmethod
     def GenerateImage(image: KvmImage):
-        cmd = f"qemu-img create {KvmImageOp.ImageFormatCmd(image.ImageFormat)}"
+        cmd = f"qemu-img create -f {KvmImageOp.ImageFormatCmd(image.ImageFormat)}"
         if image.BaseImage is not None:
-            cmd = f"{cmd} -b {image.BaseImage}"
+            cmd = f"{cmd} -b {image.BaseImage} -F {KvmImageOp.ImageFormatCmd(image.BaseFormat)}"
         cmd = f"{cmd} {image.FilePath()}"
         if image.ImageSize is not None:
             cmd = f"{cmd} {image.ImageSize}G"
@@ -167,9 +167,9 @@ class KvmImageOp(EntityOp):
     @staticmethod
     def ImageFormatCmd(image_format):
         if image_format == KvmImage.Keyword.Format.Img:
-            return "-f raw"
+            return "raw"
         elif image_format == KvmImage.Keyword.Format.QCOW2:
-            return "-f qcow2"
+            return "qcow2"
 
     @staticmethod
     def DownloadImage(image: KvmImage):
