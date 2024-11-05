@@ -60,10 +60,11 @@ class EntityOp:
 
     def Run(self, current: Entity, desired: Entity) -> Entity:
         self.log.info("Sync current record with reality")
-        real_current = self.SyncCurrent(current)
-        if real_current is not None:
-            self.log.info(f"Current record is off, updata Current record")
-            return real_current
+        if current is not None and current.Status != Keyword.EntityStatus.Deleted:
+            real_current = self.SyncCurrent(current)
+            if real_current is not None:
+                self.log.info(f"Current record is off, updata Current record")
+                return real_current
         if desired is None or desired.Status == Keyword.EntityStatus.Deleted:
             self.BreakEntity(current)
         else:

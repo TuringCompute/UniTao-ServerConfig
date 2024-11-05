@@ -86,7 +86,7 @@ class KvmImage(Entity):
 class KvmImageOp(EntityOp):
     @staticmethod
     def SyncCurrent(current_image: KvmImage) -> Entity:
-        if current_image is not None and not current_image.Exists():
+        if not current_image.Exists():
             current_image.Status = Keyword.EntityStatus.Deleted
             return current_image
         return None
