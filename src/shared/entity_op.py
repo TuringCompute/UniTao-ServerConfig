@@ -6,7 +6,7 @@ from typing import Type, Callable, List
 
 
 class EntityOp:
-    def __init__(self, log: logging.Logger, entity_name: str):
+    def __init__(self, entity_name: str, log: logging.Logger):
         self.log = log
         self.Name = entity_name
 
@@ -75,7 +75,7 @@ class EntityOp:
 class EntityOpRunner:
     def __init__(self, entity_op_class: Type[EntityOp], state_provider: EntityProvider):
         self.EntityOpClass = entity_op_class
-        self.entity_op = self.EntityOpClass(state_provider.log)
+        self.entity_op = self.EntityOpClass(state_provider.AppName, state_provider.log)
         self.state_provider = state_provider
 
     def Run(self):
