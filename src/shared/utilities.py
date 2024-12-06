@@ -50,3 +50,14 @@ class Util:
             return ProcessResult(return_code, stdout_lines, stderr_output)
         except Exception as e:
             raise SystemError(f"Error: Command [{command}] got an error: {e}")
+        
+    def compare_dict(first: dict, second: dict) -> bool:
+        for key in first.keys():
+            if key not in second:
+                return False
+            if first[key] != second[key]:
+                return False
+        for key in second.keys():
+            if key not in first:
+                return False
+        return True

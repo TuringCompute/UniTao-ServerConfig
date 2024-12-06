@@ -1,15 +1,48 @@
 #!/usr/bin/env python3
 
 import numbers
+import os
 
 from shared.utilities import Util
 from shared.logger import Log
 
-from shared.entity import Entity, ParamEntityProvider, Keyword
+from shared.entity import Entity, EntityProvider, Keyword
+from shared.entity_op import EntityOp
 
 logger = Log.get_logger("kvm_vm")
 
 class KvmVm(Entity):
+    class Keyword:
+        Drive = "drive"
+        Vm = "vm",
+        VmInfo = "vminfo",
+        VmInfoPath = "vmInfoPath"
+        VmState = "vmState"
+
+        class VmStates:
+            Running = "running"
+            Stopped = "stopped"
+            NotExists = "notExists"
+    
+    def __init__(self, entity_data: dict):
+        super().__init__(entity_data)
+        self.Name = entity_data.get(Keyword.Name, None)
+        if self.Name is None:
+            raise ValueError(f"Error: field [{Keyword.Name}] cannot be None or ''")
+        self.InfoPath = entity_data.get(self.Keyword.VmInfoPath, None)
+        self.VmState = entity_data.get(self.Keyword.VmState, None)
+    
+    def to_json(self, data: dict = None) -> dict:
+        json_data = data if data is not None else {}
+        json_data.update({
+            Keyword.Name: self.Name,
+            self.Keyword.VmInfoPath: self.InfoPath,
+            self.Keyword.VmState: self.VmState
+        })
+        return super().to_json(json_data)
+
+
+class KvmVmInfo(Entity):
     class Keyword:
         CPU = "cpu"
         SMP = "smp"
@@ -50,6 +83,36 @@ class KvmVm(Entity):
     def to_json(self, data: dict=None) -> dict:
         json_data = data if data is not None else {}
         json_data.update({
-            
+            Keyword.Name: self.Name,
+            self.Keyword.CPU: self.CPU,
+            self.Keyword.SMP: self.SMP,
+            self.Keyword.RamInGb: self.Ram,
+            self.Keyword.OsDrive: self.OsDrive,
+            self.Keyword.Drives: self.Drives
         })
         return super().to_json(json_data)
+
+
+class KvmVmOp(EntityOp):
+    @staticmethod
+    def SyncCurrent(vm_state: EntityProvider) -> bool:
+         if super().SyncCurrent(vm_state):
+             return True
+         if vm_state.Current is None:
+             return False 
+         current_state = KvmVmOp.query_vm_state(vm_state.Current.Name)                                                                                                                                                                                                                        
+         if current_state != vm_state.Current.VmState:
+             vm_state.Current.VmState = current_state
+             return True
+         return False
+         
+    @staticmethod
+    def query_vm_state(vm_name: str) -> str:
+        qry_result = Util.run_command("virsh list --name")
+        if vm_name in qry_result.stdout_lines:
+            return KvmVm.Keyword.VmStates.Running
+        qry_result = Util.run_command("virsh list --all --name")
+        if vm_name in qry_result.stdout_lines:
+            return KvmVm.Keyword.VmStates.Stopped
+        return KvmVm.Keyword.VmStates.NotExists
+    

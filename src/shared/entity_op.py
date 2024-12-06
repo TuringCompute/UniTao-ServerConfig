@@ -4,8 +4,15 @@ from shared.entity import Entity, EntityProvider, Keyword
 from typing import Type, Callable, List
 
 
-
 class EntityOp:
+    class Keyword:
+        CheckStatus = "checkStatus"
+        CreateEntity = "createEntity"
+        DestroyEntity = "destroyEntity"
+        NoAction = "noAction"           # No action needed. when no need for further decision
+        NoDecision = "noDecision"       # No decision made, Need inherit class to make decision
+
+
     def __init__(self, entity_name: str, log: logging.Logger):
         self.log = log
         self.Name = entity_name
@@ -13,65 +20,50 @@ class EntityOp:
     # sync record with reality, 
     #    if changed, return False
     #    if no change made, return True
-    @staticmethod
-    def SyncCurrent(current_entity: Entity) -> Entity:
-        return current_entity
+    def SyncCurrent(self, state_provider: EntityProvider) -> bool:
+        self.log.info("EntityOp root level: no data to sync")
+        return False
 
-    def MakeEntity(self, current_entity: Entity, desired_entity: Entity) -> Entity:
-        self.log.info("Make Mode")
-        if current_entity is None or current_entity.Status != Keyword.EntityStatus.Active:
-            self.log.info("Create Mode")
-            if current_entity is not None and current_entity.Status == Keyword.EntityStatus.Error:
-                self.log.info(f"{self.Name} in error state, delete current as clean up.")
-                self.DestroyEntity(current_entity)
-                return current_entity
-            self.log.info(f"Create {self.Name} as desired")
-            return self.CreateEntity(desired_entity)
-        self.log.info("Change Mode")
-        if self.__compare_and_change(current_entity, desired_entity):
-            return current_entity
-        return None
+    def NextAction(self, state_provider: EntityProvider) -> str:
+        if state_provider.Current is None or state_provider.Current.Status == Keyword.EntityStatus.Deleted:
+            self.log.info(f"Current does not exists.")
+            if state_provider.Desired is None or state_provider.Desired.Status == Keyword.EntityStatus.Deleted:
+                self.log.info(f"No Action - Desired does not exists either.")
+                return EntityOp.Keyword.NoAction
+            self.log.info(f"Next Action=[{EntityOp.Keyword.CreateEntity}], Current [{self.Name}] does not exists")
+            return EntityOp.Keyword.CreateEntity
+        if state_provider.Current.Status == Keyword.EntityStatus.Processing:
+            self.log.info(f"Next Action=[{EntityOp.Keyword.CheckStatus}], current [{self.Name}] @[{Keyword.EntityStatus.Processing}]")
+            return EntityOp.Keyword.CheckStatus
+        if state_provider.Desired.Status == Keyword.EntityStatus.Deleted:
+            return EntityOp.Keyword.DestroyEntity
+        return EntityOp.Keyword.NoDecision
     
     @staticmethod
     def CreateEntity(desired_entity: Entity) -> Entity:
         raise NotImplemented("Error: method CreateEntity not implemented")
 
-    def BreakEntity(self, current_entity: Entity):
-        if current_entity is None:
-            raise ValueError(f"data [current] is empty")
-        self.log.info(f"Break Mode")
-        if current_entity.Status != Keyword.EntityStatus.Deleted:
-            self.log.info(f"Destroy")
-            self.DestroyEntity(current_entity)
-
     @staticmethod
     def DestroyEntity(current_entity: Entity):
         raise NotImplemented("Error: method BreakEntity not implemented")
-    
-    def __compare_and_change(self, current_entity: Entity, desired_entity: Entity) -> Entity:
-        self.log.info(f"Compare {self.Name} and change desired to be current")
-        for change_func in self.ChangeFunctions():
-            if change_func(current_entity, desired_entity):
-                return True
-        return False
 
-    def ChangeFunctions(self) -> List[Callable[[Entity, Entity], Entity]]:
-        raise NotImplemented("Error: Method ChangeFunctions not implemented")
+    # get action function from key, if don't recognize the key, then return None
+    def GetAction(self, action_key) -> Callable[[Entity, Entity]]:
+        return None
 
-    def Run(self, current: Entity, desired: Entity) -> Entity:
-        self.log.info("Sync current record with reality")
-        if current is not None and current.Status != Keyword.EntityStatus.Deleted:
-            real_current = self.SyncCurrent(current)
-            if real_current is not None:
-                self.log.info(f"Current record is off, updata Current record")
-                return real_current
-        if desired is None or desired.Status == Keyword.EntityStatus.Deleted:
-            self.BreakEntity(current)
-        else:
-            new_entity = self.MakeEntity(current, desired)
-            if new_entity is not None:
-                return new_entity
-        return current
+    # return true so the outside loop continue
+    # return false the outside loop will break
+    def Run(self, state_provider: EntityProvider) -> bool:
+        next_action = self.NextAction(state_provider)
+        if next_action == EntityOp.Keyword.NoAction:
+            self.log.info("No more work left")
+            return False
+        if next_action == EntityOp.Keyword.NoDecision:
+            self.log.info("Wait 1 second and try to make decision again")
+            return True
+        action = self.GetAction(next_action)
+        action(state_provider)
+        return True
     
 class EntityOpRunner:
     def __init__(self, entity_op_class: Type[EntityOp], state_provider: EntityProvider):
@@ -80,12 +72,12 @@ class EntityOpRunner:
         self.state_provider = state_provider
 
     def Run(self):
+        self.state_provider.LoadStates()
         while True:
-            current, desired = self.state_provider.GetStates()
-            if current is None and desired is None:
-                self.state_provider.log.info("No more work left, exit loop")
-                break
+            if self.entity_op.SyncCurrent(self.state_provider.Current):
+                self.state_provider.SetCurrent(new_current)
+                continue
             self.state_provider.log.info("Run Entity Op from current -> desired")
-            new_current = self.entity_op.Run(current, desired)
-            self.state_provider.SetCurrent(new_current)
+            new_current = self.entity_op.Run(self.state_provider)
+            
             

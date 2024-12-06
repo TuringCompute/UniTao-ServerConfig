@@ -9,6 +9,11 @@ This utilities will use all the resource and attribute given by json file and cr
 vm_{vm_name}.json
 {
     "name": "vm name",      // name of the VM in host
+    "vmInfoPath": "path"        // vm path information
+}
+
+vminfo_{vm_name}.json
+{
     "cpu": "host",          // optional, type of cpu for the VM .
                             // host: follow means same cpu as vm host
                             // other values: x86、x86_64、ARM、MIPS、PowerPC、SPARC、RISC-V

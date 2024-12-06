@@ -4,8 +4,9 @@ import copy
 from extlib import wget
 
 from shared.utilities import Util
-from shared.entity import Entity, ParamEntityProvider, Keyword
+from shared.entity import Entity, Keyword, EntityProvider
 from shared.entity_op import EntityOp, EntityOpRunner
+from src.entityProvider.JsonFile import JsonFileEntityProvider
 from shared.logger import Log
 from typing import List, Callable
 
@@ -95,11 +96,16 @@ class KvmImage(Entity):
 
 class KvmImageOp(EntityOp):
     @staticmethod
-    def SyncCurrent(current_image: KvmImage) -> Entity:
-        if not current_image.Exists():
-            current_image.Status = Keyword.EntityStatus.Deleted
-            return current_image
-        return None
+    def SyncCurrent(img_state: EntityProvider) -> bool:
+        if super().SyncCurrent(img_state):
+            return True
+        if img_state.Current is None:
+            return False
+        if img_state.Current.Status != Keyword.EntityStatus.Deleted:
+            if not img_state.Current.Exists():
+                img_state.Current.Status = Keyword.EntityStatus.Deleted
+            return True
+        return False
 
     @staticmethod
     def CreateEntity(desired_image: KvmImage):
@@ -185,7 +191,7 @@ class KvmImageOp(EntityOp):
 
 if __name__ == "__main__":
     logger.info("KVM Image Operation")
-    state_provider = ParamEntityProvider("KVM Image", KvmImage, logger)
+    state_provider = JsonFileEntityProvider("KVM Image", KvmImage, logger)
     runner = EntityOpRunner(KvmImageOp, state_provider)
     logger.info("KVM Image Operation Run")
     runner.Run()
