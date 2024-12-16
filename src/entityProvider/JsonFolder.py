@@ -34,8 +34,11 @@ class JsonFolderEntityProvider(EntityProvider):
         self.Current = self.EntityClass(self.EntityPath, Keyword.States.Current)
         self.Desired = self.EntityClass(self.EntityPath, Keyword.States.Desired)
         self.StateLoaded = True
-    
-    def SetCurrent(self, new_current: Entity):
-        new_current.save()
-        
 
+    def PrepareData(self, data):
+        return super().PrepareData(data)
+
+    def SaveRecord(self, record_id: str, record: dict):
+        self.log.info(f"Save record @{self.CurrentPath}]")        
+        Util.run_command(f"mkdir -p {self.CurrentPath}")
+        pass

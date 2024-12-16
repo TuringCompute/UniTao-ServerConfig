@@ -1,20 +1,23 @@
 #!/usr/bin/env python3
+from logging import Logger
 import os
 import copy
 from extlib import wget
 
 from shared.utilities import Util
-from shared.entity import Entity, Keyword, EntityProvider
-from shared.entity_op import EntityOp, EntityOpRunner
-from src.entityProvider.JsonFile import JsonFileEntityProvider
+from shared.entity import Entity, Keyword, EntityOp
+from src.dataProvider.json_file import JsonFileData
 from shared.logger import Log
 from typing import List, Callable
+
+from src.shared.data_provider import DataProvider
 
 logger = Log.get_logger("kvm_image")
 
 
 class KvmImage(Entity):
     class Keyword:
+        KvmImage = "kvm_image"
         ImageFormat = "imageFormat"
         ImagePath = "imagePath"
         SizeInGB = "sizeInGB"
@@ -33,141 +36,126 @@ class KvmImage(Entity):
                     KvmImage.Keyword.Format.QCOW2
                 ]
 
-    def __init__(self, entity_data: dict):
-        super().__init__(entity_data)
-        self.ImageFormat = entity_data.get(self.Keyword.ImageFormat, None)
-        if self.ImageFormat is None:
-            raise ValueError(f"Error: missing field [{self.Keyword.ImageFormat}] to specify which the file format the image is using")
-        if self.ImageFormat not in self.Keyword.Format.list():
-            raise ValueError(f"Error: Invalid {self.Keyword.ImageFormat}=[{self.ImageFormat}, only support{self.Keyword.Format.list()}")
-        self.Name = entity_data.get(Keyword.Name, None)
-        if self.Name is None:
-            raise ValueError(f"Error: missing field [{Keyword.Name}] for the image")
-        self.ImagePath = entity_data.get(self.Keyword.ImagePath, None)
-        if self.ImagePath is None:
-            raise ValueError(f"Error: missing field [{self.Keyword.ImagePath}] to specify where to hold the image")
-        self.ImageSize = entity_data.get(self.Keyword.SizeInGB, None)
-        self.DownloadLink = entity_data.get(self.Keyword.DownloadLink, None)
-        self.BaseImage = entity_data.get(self.Keyword.BaseImagePath, None)
-        self.BaseFormat = entity_data.get(self.Keyword.BaseImageFormat, None)
-        if self.DownloadLink is not None:
+    @staticmethod
+    def EntityType() -> str:
+        return KvmImage.Keyword.KvmImage
+
+    @staticmethod
+    def validate_data(data: dict):
+        image_format = data.get(KvmImage.Keyword.ImageFormat, None)
+        if image_format is None:
+            raise ValueError(f"Error: missing field [{KvmImage.Keyword.ImageFormat}] to specify which the file format the image is using")
+        if image_format not in KvmImage.Keyword.Format.list():
+            raise ValueError(f"Error: Invalid {KvmImage.Keyword.ImageFormat}=[{image_format}, only support{KvmImage.Keyword.Format.list()}")
+        image_path = data.get(KvmImage.Keyword.ImagePath, None)
+        if image_path is None:
+            raise ValueError(f"Error: missing field [{KvmImage.Keyword.ImagePath}] to specify where to hold the image")
+        image_size = data.get(KvmImage.Keyword.SizeInGB, None)
+        download_link = data.get(KvmImage.Keyword.DownloadLink, None)
+        base_image_path = data.get(KvmImage.Keyword.BaseImagePath, None)
+        base_image_format = data.get(KvmImage.Keyword.BaseImageFormat, None)
+        if download_link is not None:
             # meaning the image file is downloaded from URL. there should be no SizeInGB and BaseImagePath in data
-            if self.ImageSize is not None:
-                raise ValueError(f"Error: since field [{self.Keyword.DownloadLink}] is not None, field[{self.Keyword.SizeInGB}] should not exists.")
+            if image_size is not None:
+                raise ValueError(f"Error: since field [{KvmImage.Keyword.DownloadLink}] is not None, field[{KvmImage.Keyword.SizeInGB}] should not exists.")
             
-            if self.BaseImage is not None:
-                raise ValueError(f"Error: since field [{self.Keyword.DownloadLink}] is not None, field[{self.Keyword.BaseImagePath}] should not exists.")
+            if base_image_path is not None:
+                raise ValueError(f"Error: since field [{KvmImage.Keyword.DownloadLink}] is not None, field[{KvmImage.Keyword.BaseImagePath}] should not exists.")
         else:
             # meaning we need to create the image.
-            if self.ImageSize is None and self.BaseImage is None:
+            if image_size is None and base_image_path is None:
                 raise ValueError(f"Error: to create image without base, we need to define image size")
-            if self.ImageSize is not None and type(self.ImageSize) is not int:
-                raise ValueError(f"Error: invalid value of field [{self.Keyword.SizeInGB}]={self.ImageSize}, expect integer here")
-            if self.BaseImage is not None:
-                if self.BaseFormat is None:
-                    raise ValueError(f"Error: missing attribute {self.Keyword.BaseImageFormat} about base image {self.BaseImage}")
-                if self.BaseFormat not in self.Keyword.Format.list():
-                    raise ValueError(f"Error: Invalid {self.Keyword.BaseImageFormat}=[{self.BaseFormat}, only support {self.Keyword.Format.list()}")
+            if image_size is not None and type(image_size) is not int:
+                raise ValueError(f"Error: invalid value of field [{KvmImage.Keyword.SizeInGB}]={image_size}, expect integer here")
+            if base_image_path is not None:
+                if base_image_format is None:
+                    raise ValueError(f"Error: missing attribute {KvmImage.Keyword.BaseImageFormat} about base image {base_image_path}")
+                if base_image_format not in KvmImage.Keyword.Format.list():
+                    raise ValueError(f"Error: Invalid {KvmImage.Keyword.BaseImageFormat}=[{base_image_format}, only support {KvmImage.Keyword.Format.list()}")
 
-
-    def to_json(self, data: dict=None) -> dict:
-        json_data = data if data is not None else {}
-        json_data.update({
-            Keyword.Name: self.Name,
-            self.Keyword.ImageFormat: self.ImageFormat,
-            self.Keyword.ImagePath: self.ImagePath
-        })
-        if self.DownloadLink is not None:
-            json_data[self.Keyword.DownloadLink] = self.DownloadLink
-        if self.BaseImage is not None:
-            json_data[self.Keyword.BaseImagePath]=self.BaseImage
-        if self.ImageSize is not None:
-            json_data[self.Keyword.SizeInGB] = self.ImageSize
-        return super().to_json(json_data)
-
-    def Exists(self):
-        file_path = self.FilePath()
-        logger.info(f"Check Image File:[{file_path}]")
-        return os.path.exists(file_path)
-
-    def FilePath(self):
-        return os.path.join(self.ImagePath, self.Name)
-
+    def Exists(self) -> bool:
+        if self.Data is None:
+            return False
+        image_path = self.Data.get(KvmImage.Keyword.ImagePath, None)
+        if image_path is None:
+            return False
+        return os.path.exists(image_path)
 
 class KvmImageOp(EntityOp):
-    @staticmethod
-    def SyncCurrent(img_state: EntityProvider) -> bool:
-        if super().SyncCurrent(img_state):
-            return True
-        if img_state.Current is None:
-            return False
-        if img_state.Current.Status != Keyword.EntityStatus.Deleted:
-            if not img_state.Current.Exists():
-                img_state.Current.Status = Keyword.EntityStatus.Deleted
-            return True
-        return False
-
-    @staticmethod
-    def CreateEntity(desired_image: KvmImage):
-        if not desired_image.Exists():
-            logger.info("Image does not exists. Create one")
-            KvmImageOp.Create(desired_image)
-        return desired_image
-
-    @staticmethod
-    def DestroyEntity(current_image: KvmImage):
-        if current_image.Exists():
-            KvmImageOp.Destroy(current_image)
-        current_image.Status = Keyword.EntityStatus.Deleted
-
-    @classmethod
-    def ChangeFunctions(cls) -> List[Callable[[Entity, Entity], Entity]]:
-        return [
-            KvmImageOp.ChangeFilePath,
-            KvmImageOp.RebuildImage
-        ]
-
-    @staticmethod
-    def ChangeFilePath(current_image: KvmImage, desired_image: KvmImage) -> KvmImage:
-        new_image = copy.deepcopy(current_image)
-        desired_file_path = desired_image.FilePath()
-        current_file_path = current_image.FilePath()
-        if current_file_path != desired_file_path:
-            if desired_image.ImagePath != current_image.ImagePath:
-                Util.run_command(f"mkdir -p {desired_image.ImagePath}")
-            Util.run_command(f"mv {current_file_path} {desired_file_path}")
-            new_image.ImagePath = desired_image.ImagePath
-            new_image.Name = desired_image.Name
-            return new_image
+    def _process_request(self, entity_id: str, request_data: dict) -> dict:
+        request_status = request_data.get(Keyword.Status, Keyword.EntityStatus.Active)
+        current_image = KvmImage(self.Current)
+        if request_status == Keyword.EntityStatus.Active:
+            # create/modify kvm image status=[Active/Error]
+            if not current_image.Exists():
+                # create kvm image
+                self.Create(request_data)
+                return request_data
+            else:
+                # modify kvm image
+                for func in [self.ChangeFilePath, self.RebuildImage]:
+                    new_data = func(request_data)
+                    if new_data is not None:
+                        return new_data
+        elif request_status == Keyword.EntityStatus.Deleted:
+            if current_image.Exists():
+                self.log.info(f"kvm image [{entity_id}] exists, Delete")
+                # delete kvm image
+                self.Destroy()
+                self.Current.Data[Keyword.Status] = Keyword.EntityStatus.Deleted
+                return self.Current.Data
+            self.log.info(f"kvm image [{entity_id}] deleted")
+            current_status = current_image.Data.get(Keyword.Status, None) if current_image.Data is not None else None
+            if current_status != Keyword.EntityStatus.Deleted:
+                self.log.info(f"Sync kvm image data for [{entity_id}]")
+                return request_data
+        self.log.info("No work to be done.")
         return None
 
-    @staticmethod
-    def RebuildImage(current_image: KvmImage, desired_image: KvmImage) -> KvmImage:
-        if current_image.ImageFormat != desired_image.ImageFormat or \
-            current_image.BaseImage != desired_image.BaseImage or \
-            current_image.DownloadLink != desired_image.DownloadLink or \
-            current_image.ImageSize != desired_image.ImageSize:
-            KvmImageOp.Destroy(current_image)
-            KvmImageOp.Create(desired_image)
-            return desired_image
+    def ChangeFilePath(self, request_data: dict) -> dict:
+        current_image_path = self.Current.Data[KvmImage.Keyword.ImagePath]
+        request_image_path = request_data.get(KvmImage.Keyword.ImagePath, None)
+        if request_image_path is None:
+            return None
+        if current_image_path == request_image_path:
+            return None
+        request_image_folder = os.path.dirname(os.path.abspath(request_image_path))
+        Util.run_command(f"mkdir -p {request_image_folder}")
+        Util.run_command(f"cp {current_image_path} {request_image_path}")
+        Util.run_command(f"rm -f {current_image_path}")
+        self.Current.Data[KvmImage.Keyword.ImagePath] = request_image_path
+        return self.Current.Data
+
+    def RebuildImage(self, request_data: dict) -> dict:
+        for key in [KvmImage.Keyword.ImageFormat, KvmImage.Keyword.BaseImagePath, KvmImage.Keyword.DownloadLink, KvmImage.Keyword.SizeInGB]:
+            current_value = self.Current.Data.get(key, None)
+            request_value = request_data.get(key, None)
+            if current_value != request_value:
+                self.Destroy()
+                self.Create(request_data)
+                return request_data
         return None
 
-    @staticmethod
-    def Create(image: KvmImage):
-        Util.run_command(f"mkdir -p {image.ImagePath}")
-        if image.DownloadLink is not None:
-            KvmImageOp.DownloadImage(image)
+    def Create(self, request_data: dict):
+        KvmImage.validate_data(request_data)
+        image_path = request_data[KvmImage.Keyword.ImagePath]
+        image_folder = os.path.dirname(os.path.abspath(image_path))
+        Util.run_command(f"mkdir -p {image_folder}")
+        download_link = request_data.get(KvmImage.Keyword.DownloadLink, None)
+        if download_link is not None:
+            self.log.info(f"download as file:{image_path} from {download_link}")
+            wget.download(url=download_link, out=image_path)
             return
-        KvmImageOp.GenerateImage(image)
-
-    @staticmethod
-    def GenerateImage(image: KvmImage):
-        cmd = f"qemu-img create -f {KvmImageOp.ImageFormatCmd(image.ImageFormat)}"
-        if image.BaseImage is not None:
-            cmd = f"{cmd} -b {image.BaseImage} -F {KvmImageOp.ImageFormatCmd(image.BaseFormat)}"
-        cmd = f"{cmd} {image.FilePath()}"
-        if image.ImageSize is not None:
-            cmd = f"{cmd} {image.ImageSize}G"
+        image_format = request_data[KvmImage.Keyword.ImageFormat]
+        cmd = f"qemu-img create -f {KvmImageOp.ImageFormatCmd(image_format)}"
+        base_image_path = request_data.get(KvmImage.Keyword.BaseImagePath, None)
+        if base_image_path is not None:
+            base_image_format = request_data[KvmImage.Keyword.BaseImageFormat]
+            cmd = f"{cmd} -b {base_image_path} -F {KvmImageOp.ImageFormatCmd(base_image_format)}"
+        cmd = f"{cmd} {image_path}"
+        image_size = request_data.get(KvmImage.Keyword.SizeInGB, None)
+        if image_size is not None:
+            cmd = f"{cmd} {image_size}G"
         Util.run_command(cmd)
 
     @staticmethod
@@ -177,21 +165,18 @@ class KvmImageOp(EntityOp):
         elif image_format == KvmImage.Keyword.Format.QCOW2:
             return "qcow2"
 
-    @staticmethod
-    def DownloadImage(image: KvmImage):
-        file_path = image.FilePath()
-        logger.info(f"download as file:{file_path} from {image.DownloadLink}")
-        wget.download(url=image.DownloadLink, out=image.FilePath())
-
-    @staticmethod
-    def Destroy(image: KvmImage):
-        image_file_path = image.FilePath()
+    def Destroy(self):
+        image_file_path = self.Current.Data[KvmImage.Keyword.ImagePath]
         Util.run_command(f"rm -rf {image_file_path}")
 
 
 if __name__ == "__main__":
     logger.info("KVM Image Operation")
-    state_provider = JsonFileEntityProvider("KVM Image", KvmImage, logger)
-    runner = EntityOpRunner(KvmImageOp, state_provider)
+    entity_type = KvmImage.EntityType()
+    logger.info(f"Create [{entity_type}] data handler from Json File Data Provider")
+    data_provider = JsonFileData(entity_type, logger)
+    logger.info(f"Create [{entity_type}] Entity Operation Controller")
+    image_op = KvmImageOp(KvmImage, logger, data_provider)    
     logger.info("KVM Image Operation Run")
-    runner.Run()
+    image_op.Run()
+

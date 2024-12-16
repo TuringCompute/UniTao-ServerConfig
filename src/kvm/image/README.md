@@ -16,12 +16,17 @@ This Image utility can be used to
 
  ```jsonc
 {
-    "imageFormat": "{qcow2/img}",       // the image file type  
-    "name": "",                         // the image name, the file name will be defined as {name}.{imageFormat}
-    "sizeInGB": 30,                     // optional, only use to create a new image with size requirement
-    "downloadLink": "",                 // optional, only use when need to download the image file from remote location
-    "baseImagePath": "",                // optional, only use when need to create a new image with a baseline image
-    "baseImageFormat": "{qcow2/img}"
-    "imagePath": ""                     // folder or path to store the image file
+    "id": "image_id",                   // id of the image to be identified
+    "entityType": "kvm_image",          // Entity Data Type
+    "current": {
+        "imageFormat": "{qcow2/img}",       // the image file type  
+        "sizeInGB": 30,                     // optional, only use to create a new image with size requirement
+        "downloadLink": "",                 // optional, only use when need to download the image file from remote location
+        "baseImagePath": "",                // optional, only use when need to create a new image with a baseline image
+        "baseImageFormat": "{qcow2/img}",
+        "imagePath": "",                    // image file path to store the image
+        "exists": true,                     // whether or not image exists 
+    },
+    "desired": {}                           // changes to be made to current data
 }
  ```

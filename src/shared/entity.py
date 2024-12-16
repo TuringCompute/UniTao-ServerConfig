@@ -1,9 +1,15 @@
-from logging import Logger
+import logging
 
 from typing import Type
 
+from shared.data_provider import DataProvider
+
+
+
 class Keyword:
-    Name = "name"
+    Id = "id"
+    EntityData = "entityData"
+    EntityType = "entityType"
     Status = "status"
 
     class States:
@@ -17,44 +23,37 @@ class Keyword:
         Error = "error"
 
 
+# root data class for Entity. contain basic Data structure of each Entity
 class Entity:
-    def __init__(self, entity_data: dict):
-        self.Status = entity_data.get(Keyword.Status, Keyword.EntityStatus.Active)
-
-    def to_json(self, data: dict=None) -> dict:
-        if data is not None:
-            data[Keyword.Status] = self.Status
-            return data
-        raise NotImplemented(f"Error: method [to_json] not implemented for class {self.__class__.__name__}")
-    
-    def __eq__(self, other):
-        raise NotImplemented(f"Error: method [__eq__] not implemented for class {self.__class__.__name__}")
-    
-    def save(self):
-        raise NotImplemented(f"Error: method [save] not implemented for class {self.__class__.__name__}")
-
-class EntityProvider:
-    def __init__(self, app_name: str, entity_class: Type[Entity], log: Logger):
-        self.log = log
-        self.AppName = app_name
-        self.EntityClass = entity_class
-        self.Current = None
-        self.Desired = None
-        self.StateLoaded = False
-        self.Changed = False
-
-    def LoadStates(self):
-        raise NotImplemented(f"Method LoadStates is not implemented")
-    
-    def SetCurrent(self, new_current: Entity):
-        self.Current = new_current
-    
     @staticmethod
-    def MatchStates(current: Entity, desired: Entity) -> bool:
-        if current is None:
-            return False
-        if desired is None and current.Status==Keyword.EntityStatus.Deleted:
-            return True
-        current_data = current.to_json()
-        desired_data = desired.to_json()
-        
+    def EntityType() -> str:
+        raise NotImplemented("Method [_type_name] not implemented")
+
+    def __init__(self, entity_id: str, entity_data: dict):
+        self.ID = entity_id
+        self.Data = entity_data
+
+class EntityOp:
+    def __init__(self, entity_class: Type[Entity], log: logging.Logger, data_handler: DataProvider):
+        self.log = log
+        self.EntityClass = entity_class
+        self.EntityType = entity_class.EntityType()
+        self.data_handler = data_handler
+
+    def Run(self):
+        entity_id, request_data = self.data_handler.GetRequest(self.EntityType)
+        self.Current = self.EntityClass(entity_id, None)
+        while True:
+            self.Current.Data = self.data_handler.GetInventory(self.EntityType, entity_id)
+            new_inventory = self._process_request(entity_id, request_data)
+            if new_inventory is None:
+                self.log.info("Request processed, exit.")
+                break
+            self.log.info("Inventory data changed, save.")
+            self.data_handler._write_inventory(self.EntityType, entity_id, new_inventory)
+            self.log.info("Inventory data change saved.")
+
+    def _process_request(self, entity_id: str, request_data: dict) -> dict:
+        raise NotImplemented(f"Method _process_request is not implemented")
+
+    

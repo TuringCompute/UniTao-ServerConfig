@@ -6,7 +6,7 @@ from logging import Logger
 from shared.entity import DataProvider
 from shared.utilities import Util
 
-class JsonFileDataProvider(DataProvider):
+class JsonFileData(DataProvider):
     @staticmethod
     def parse_args(app_title:str) -> argparse.Namespace:
         parser = argparse.ArgumentParser(description=f"{app_title} Operations")
@@ -18,7 +18,7 @@ class JsonFileDataProvider(DataProvider):
     def __init__(self, entity_type: str, logger: Logger):
         self.EntityType = entity_type
         logger.info(f"parse cmd[{entity_type}] arguments")
-        self.Args = JsonFileDataProvider.parse_args(entity_type)
+        self.Args = JsonFileData.parse_args(entity_type)
         self.InventoryPath = self.Args.current
         self.RequestFile = self.Args.desired
 

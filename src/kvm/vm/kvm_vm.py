@@ -11,6 +11,7 @@ from shared.entity_op import EntityOp
 
 logger = Log.get_logger("kvm_vm")
 
+# Need to use JsonFolderProvider
 class KvmVm(Entity):
     class Keyword:
         Drive = "drive"
