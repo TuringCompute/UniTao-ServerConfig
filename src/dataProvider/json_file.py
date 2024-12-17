@@ -20,6 +20,8 @@ class JsonFileData(DataProvider):
         logger.info(f"parse cmd[{entity_type}] arguments")
         self.Args = JsonFileData.parse_args(entity_type)
         self.InventoryPath = self.Args.current
+        if not os.path.isdir(self.InventoryPath):
+            raise ValueError(f"--current should point to a folder to hold current state json file")
         self.RequestFile = self.Args.desired
 
     def _get_inventory(self, entity_type: str, entity_id: str) -> dict:
@@ -29,8 +31,10 @@ class JsonFileData(DataProvider):
         return inventory_data
     
     def _get_request(self, entity_type: str) -> tuple[str, dict]:
-        desired_data = Util.read_json_file(self.RequestFile) if os.path.exists(self.Params.desired) else None
-        file_id = os.path.basename(self.RequestFile)
+        desired_data = Util.read_json_file(self.RequestFile) if os.path.exists(self.Args.desired) else None
+        file_id, file_ext = os.path.basename(self.RequestFile)
+        if file_ext != "json":
+            raise ValueError(f"--desired should point to a json file. with extension=[json], got [{file_ext}] instead.")
         return file_id, desired_data
 
     def _write_inventory(self, entity_type: str, entity_id: str, data: dict) -> bool:
