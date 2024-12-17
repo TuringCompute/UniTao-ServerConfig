@@ -34,7 +34,7 @@ class JsonFileData(DataProvider):
         desired_data = Util.read_json_file(self.RequestFile) if os.path.exists(self.Args.desired) else None
         file_name =  os.path.basename(self.RequestFile)
         file_id, file_ext = os.path.splitext(file_name)
-        if file_ext != "json":
+        if file_ext != ".json":
             raise ValueError(f"--desired should point to a json file. with extension=[json], got [{file_ext}] instead.")
         return file_id, desired_data
 
