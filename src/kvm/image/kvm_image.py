@@ -1,16 +1,12 @@
 #!/usr/bin/env python3
-from logging import Logger
 import os
-import copy
 from extlib import wget
 
 from shared.utilities import Util
-from shared.entity import Entity, Keyword, EntityOp
+from shared.entity import Entity, Keyword, EntityOp, DataProvider
 from src.dataProvider.json_file import JsonFileData
 from shared.logger import Log
-from typing import List, Callable
-
-from src.shared.data_provider import DataProvider
+from typing import List
 
 logger = Log.get_logger("kvm_image")
 
