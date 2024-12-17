@@ -80,7 +80,7 @@ class KvmImage(Entity):
 class KvmImageOp(EntityOp):
     def _process_request(self, entity_id: str, request_data: dict) -> dict:
         request_status = request_data.get(Keyword.Status, Keyword.EntityStatus.Active)
-        current_image = KvmImage(self.Current)
+        current_image = KvmImage(entity_id, self.Current.Data)
         if request_status == Keyword.EntityStatus.Active:
             # create/modify kvm image status=[Active/Error]
             if not current_image.Exists():
