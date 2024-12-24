@@ -77,8 +77,15 @@ class KvmImage:
         image_path = self.ImageData.get(self.Keyword.ImagePath, None)
         if image_path is None:
             raise ValueError(f"Missing field [{self.Keyword.ImagePath}] in Image Data")
+        if not os.path.isabs(image_path):
+            self.log.info(f"found relative path [{self.Keyword.ImagePath}]=[{image_path}]")
+            image_path = os.path.abspath(os.path.join(os.path.dirname(self.Args.path), image_path))
+            self.log.info(f"Update [{self.Keyword.ImagePath}]=[{image_path}]")
+            self.ImageData[self.Keyword.ImagePath] = image_path
         image_file_name = os.path.basename(image_path)
         image_name, file_ext = os.path.splitext(image_file_name)
+        if file_ext == "":
+            raise ValueError(f"Invalid value, [{self.Keyword.ImagePath}]=[{image_path}], expect file extension [{self.Keyword.Formats.list()}]")
         if image_name != self.ImagName:
             raise ValueError(f"Image data file name should match image name. [{self.ImagName}]!=[{image_name}]")
         image_format = self.ImageData.get(self.Keyword.ImageFormat, None)
@@ -101,6 +108,11 @@ class KvmImage:
                 raise ValueError(f"Invalid value, [{self.Keyword.SizeInGB}]=image_size, expect int")
             base_image_path = self.ImageData.get(self.Keyword.BaseImagePath, None)
             if base_image_path is not None:
+                if not os.path.isabs(base_image_path):
+                    self.log.info(f"found relative path [{self.Keyword.BaseImagePath}]=[{base_image_path}]")
+                    base_image_path = os.path.abspath(os.path.join(os.path.dirname(self.Args.path), base_image_path))
+                    self.log.info(f"Update [{self.Keyword.BaseImagePath}]=[{base_image_path}]")
+                    self.ImageData[self.Keyword.BaseImagePath] = base_image_path
                 if not os.path.exists(base_image_path):
                     raise ValueError(f"Invalid value [{self.Keyword.BaseImagePath}] does not exists. [{base_image_path}]")
                 base_image_format = self.ImageData.get(self.Keyword.BaseImageFormat, None)
