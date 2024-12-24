@@ -1,1 +1,2 @@
-wget==3.2           # download remote link, used by lib\utilities.py
+wget==3.2                   # download remote link, used by lib\utilities.py
+libvirt-python==10.10.0      # Python library for libvirt
