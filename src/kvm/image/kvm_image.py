@@ -70,7 +70,7 @@ class KvmImage:
         if file_ext!=".json":
             raise ValueError(f"Invalid path, data file should be an json file. got [{file_name}] instead")
         self.ImageData = Util.read_json_file(self.Args.path)
-        if not isinstance(self.ImageData):
+        if not isinstance(self.ImageData, dict):
             raise ValueError(f"Invalid image data, not dict")
     
     def Validate(self):
