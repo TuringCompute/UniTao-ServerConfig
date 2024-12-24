@@ -144,7 +144,7 @@ class KvmImage:
         Util.run_command(cmd)
 
 if __name__ == "__main__":
-    logger = Log.get_logger(KvmImage.Keyword.KvmImage)
+    logger = Log.get_logger("KvmImage")
     logger.info("Create Kvm Image")
     image = KvmImage(logger)
     image.Create()
