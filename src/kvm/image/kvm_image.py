@@ -55,9 +55,9 @@ class KvmImage:
 
     @staticmethod
     def ImageFormatCmd(image_format):
-        if image_format == KvmImage.Keyword.Format.Img:
+        if image_format == KvmImage.Keyword.Formats.IMG:
             return "raw"
-        elif image_format == KvmImage.Keyword.Format.QCOW2:
+        elif image_format == KvmImage.Keyword.Formats.QCOW2:
             return "qcow2"
 
     def __init__(self, logger: logging.Logger):
