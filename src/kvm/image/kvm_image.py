@@ -65,10 +65,7 @@ class KvmImage:
         self.Args = KvmImage.parse_args()
         if not os.path.exists(self.Args.path):
             raise ValueError(f"Invalid path does not exists.[{self.Args.path}]")
-        file_name = os.path.basename(self.Args.path)
-        self.ImagName, file_ext = os.path.splitext(file_name)
-        if file_ext!=".json":
-            raise ValueError(f"Invalid path, data file should be an json file. got [{file_name}] instead")
+        self.ImagName = Util.file_data_name(self.Args.path)
         self.ImageData = Util.read_json_file(self.Args.path)
         self.Validate()
         
@@ -81,7 +78,7 @@ class KvmImage:
             raise ValueError(f"Missing field [{self.Keyword.ImagePath}] in Image Data")
         if not os.path.isabs(image_path):
             self.log.info(f"found relative path [{self.Keyword.ImagePath}]=[{image_path}]")
-            image_path = os.path.abspath(os.path.join(os.path.dirname(self.Args.path), image_path))
+            image_path = Util.abs_path(os.path.dirname(self.Args.path), image_path)
             self.log.info(f"Update [{self.Keyword.ImagePath}]=[{image_path}]")
             self.ImageData[self.Keyword.ImagePath] = image_path
         image_file_name = os.path.basename(image_path)
@@ -112,7 +109,7 @@ class KvmImage:
             if base_image_path is not None:
                 if not os.path.isabs(base_image_path):
                     self.log.info(f"found relative path [{self.Keyword.BaseImagePath}]=[{base_image_path}]")
-                    base_image_path = os.path.abspath(os.path.join(os.path.dirname(self.Args.path), base_image_path))
+                    base_image_path = Util.abs_path(os.path.dirname(self.Args.path), base_image_path)
                     self.log.info(f"Update [{self.Keyword.BaseImagePath}]=[{base_image_path}]")
                     self.ImageData[self.Keyword.BaseImagePath] = base_image_path
                 if not os.path.exists(base_image_path):

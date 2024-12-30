@@ -1,4 +1,5 @@
 import json
+import os
 import subprocess
 
 
@@ -28,8 +29,13 @@ class Util:
 
     def run_command(command: str) -> ProcessResult:
         cmd_list = command.split()
+        real_cmd_list= []
+        for part in cmd_list:
+            if part == "":
+                continue
+            real_cmd_list.append(part)
         try:
-            process = subprocess.Popen(cmd_list,
+            process = subprocess.Popen(real_cmd_list,
                                         stdout=subprocess.PIPE,
                                         stderr=subprocess.PIPE,
                                         text=True  # Output as strings instead of bytes
@@ -61,3 +67,18 @@ class Util:
             if key not in first:
                 return False
         return True
+
+    # return abspath based on base_path.
+    def abs_path(base_path: str, relative_path: str) -> str:
+        os.path.abspath(os.path.join(base_path, relative_path))
+
+    # file_name confain data name.
+    # check file exists
+    # check ext is .json
+    # return data_name
+    def file_data_name(file_path: str) -> str:
+        file_name = os.path.basename(file_path)
+        data_name, file_ext = os.path.splitext(file_name)
+        if file_ext!=".json":
+            raise ValueError(f"Invalid path, data file should be an json file. got [{file_name}] instead")
+        return data_name
