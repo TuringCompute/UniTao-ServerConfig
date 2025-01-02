@@ -17,4 +17,4 @@ export PYTHONPATH="$SCRIPT_DIR"
 
 
 # Run the command passed as parameters
-"$@"
+python3 "$@"
