@@ -128,8 +128,8 @@ class KvmVm:
         self.sync_vm_state()
     
     def delete_vm(self):
-        vm_list = Util.run_command("virsh list --name --all")
-        if self.VmName not in vm_list:
+        cmd_result = Util.run_command("virsh list --name --all")
+        if self.VmName not in cmd_result.stdout_lines:
             self.log.info(f"VM[{self.VmName}] not in virsh list. Done")
             return
         self.log.info(f"run virsh to destroy VM[{self.VmName}]")
@@ -137,8 +137,8 @@ class KvmVm:
 
     def create_vm(self):
         self.log.info(f"Create VM [{self.VmName}]")
-        vm_list = Util.run_command(f"virsh list --name --all")
-        if self.VmName in vm_list:
+        cmd_result = Util.run_command(f"virsh list --name --all")
+        if self.VmName in cmd_result.stdout_lines:
             self.log.info(f"VM[{self.VmName}] already exists.")
             return
         vm_create_cmd = self.create_vm_cmd()
@@ -152,9 +152,9 @@ class KvmVm:
         self.log.info("vm def creation bash created.")
         vm_def_file = os.path.join(vm_def_path, f"vm_def_{self.VmName}.xml")
         self.log.info(f"Run def creation command to generate VM definition XML file. [{vm_def_file}]")
-        vm_xml = Util.run_command(vm_create_cmd)
+        cmd_result = Util.run_command(vm_create_cmd)
         with open(vm_def_file, "w") as fp:
-            fp.write(vm_xml)
+            fp.writelines(cmd_result.stdout_lines)
         self.log.info(f"VM definition file created")
         self.log.info(f"Create vm [{self.VmName}] using definition XML. [{vm_def_file}]")
         Util.run_command(f"virsh define {vm_def_file}")
@@ -175,8 +175,8 @@ class KvmVm:
         return vm_create_cmd
 
     def vm_running(self) -> bool:
-        vm_list = Util.run_command("virsh list --name")
-        return self.VmName in vm_list
+        cmd_result = Util.run_command("virsh list --name")
+        return self.VmName in cmd_result.stdout_lines
 
     def sync_vm_state(self):
         if self.vm_running():
