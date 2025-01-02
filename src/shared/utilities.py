@@ -70,7 +70,7 @@ class Util:
 
     # return abspath based on base_path.
     def abs_path(base_path: str, relative_path: str) -> str:
-        os.path.abspath(os.path.join(base_path, relative_path))
+        return os.path.abspath(os.path.join(base_path, relative_path))
 
     # file_name confain data name.
     # check file exists
