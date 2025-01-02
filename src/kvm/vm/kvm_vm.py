@@ -214,9 +214,9 @@ class KvmNetwork:
         IfaceType = "ifaceType"
         BridgeName = "bridgeName"
         TapSource = "tapSource"
-        TapSourceMode = "tapSourceMode"
+        TapMode = "tapMode"
 
-        class TapSourceModes:
+        class TapModes:
             Bridge = "bridge"
             Private = "private"
             VEPA = "vepa"
@@ -260,18 +260,18 @@ class KvmNetwork:
         tap_source = self.NetData.get(self.Keyword.TapSource, None)
         if tap_source is None:
             raise ValueError(f"Missing field [{self.Keyword.TapSource}] for [{self.Keyword.InterfaceTypes.MacVTap}] interface")
-        tap_src_mode = self.NetData.get(self.Keyword.TapSourceMode, None)
-        if tap_src_mode is not None and tap_src_mode != self.Keyword.TapSourceModes.Bridge:
-            raise ValueError(f"For MacVTap mode,  Not support[{self.Keyword.TapSourceMode}] =[{tap_src_mode}], only support [{self.Keyword.TapSourceModes.Bridge}]")
+        tap_src_mode = self.NetData.get(self.Keyword.TapMode, None)
+        if tap_src_mode is not None and tap_src_mode != self.Keyword.TapModes.Bridge:
+            raise ValueError(f"For MacVTap mode,  Not support[{self.Keyword.TapMode}] =[{tap_src_mode}], only support [{self.Keyword.TapModes.Bridge}]")
         device_name = self.NetData.get(self.Keyword.BridgeName, None)
         if device_name is None:
-            raise ValueError(f"Missing field[{self.Keyword.BridgeName}] for {self.Keyword.TapSourceMode} = [{self.Keyword.TapSourceModes}]")
+            raise ValueError(f"Missing field[{self.Keyword.BridgeName}] for {self.Keyword.TapMode} = [{self.Keyword.TapModes}]")
 
     def net_cmd(self) -> str:
         if self.NetData[self.Keyword.IfaceType] == self.Keyword.InterfaceTypes.Bridge:
             return f"{self.Keyword.InterfaceTypes.Bridge}={self.NetData[self.Keyword.BridgeName]},model=virtio"
         if self.NetData[self.Keyword.IfaceType] == self.Keyword.InterfaceTypes.MacVTap:
-            return f"type=direct,source={self.NetData[self.Keyword.BridgeName]},source_mode={self.Keyword.TapSourceModes.Bridge},model=virtio"
+            return f"type=direct,source={self.NetData[self.Keyword.BridgeName]},source_mode={self.Keyword.TapModes.Bridge},model=virtio"
 
 
 if __name__ == "__main__":

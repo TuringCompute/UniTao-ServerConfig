@@ -16,7 +16,6 @@ This Image utility can be used to
 
  ```jsonc
 {
-    "id": "image_id",                   // id of the image to be identified
     "imagePath": "",                    // image file path to store the image
     "imageSource": "{remote/local}",    // source of image decide how image is being created
                                         // remote: download from remote site
