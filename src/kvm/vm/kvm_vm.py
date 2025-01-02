@@ -121,6 +121,7 @@ class KvmVm:
 
     def Process(self):
         if self.VmData[self.Keyword.VmState] == self.Keyword.VmStates.NotExists:
+            self.log.info(f"To remove VM: [{self.VmName}]")
             self.delete_vm()
             return
         self.create_vm()
@@ -129,7 +130,9 @@ class KvmVm:
     def delete_vm(self):
         vm_list = Util.run_command("virsh list --name --all")
         if self.VmName not in vm_list:
+            self.log.info(f"VM[{self.VmName}] not in virsh list. Done")
             return
+        self.log.info(f"run virsh to destroy VM[{self.VmName}]")
         Util.run_command(f"virsh destroy {self.VmName}")
 
     def create_vm(self):
@@ -280,3 +283,4 @@ if __name__ == "__main__":
     logger = Log.get_logger("KvmImage")
     logger.info("Create Kvm VM")
     vm = KvmVm(logger)
+    vm.Process()
