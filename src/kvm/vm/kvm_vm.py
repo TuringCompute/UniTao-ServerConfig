@@ -22,6 +22,8 @@ class KvmVm:
         RamInGb = "ramInGB"
         Disks = "disks"
         Networks = "networks"
+        OsType = "osType"
+        OsVariant = "osVariant"
         VmState = "vmState"
         VmPath = "vmPath"
         VmDefPath = "vmDefPath"
@@ -98,6 +100,14 @@ class KvmVm:
                 raise ValueError(f"Disk File Path does not exists[{net_def_path}]")
             kvm_net = KvmNetwork(net_def_path, self.log)
             self.Networks.append(kvm_net)
+        os_type = self.VmData.get(self.Keyword.OsType, None)
+        if os_type is None:
+            raise ValueError(f"Missing field[{self.Keyword.OsType}] in Vm Data")
+        if os_type != "linux":
+            raise ValueError(f"Invalid value[{self.Keyword.OsType}]=[{os_type}], we currently only support [linux]")
+        os_variant = self.VmData.get(self.Keyword.OsVariant, None)
+        if os_variant is None:
+            raise ValueError(f"Missing field[{self.Keyword.OsVariant}] in Vm Data")
         vm_state = self.VmData.get(self.Keyword.VmState, None)
         if vm_state is None:
             raise ValueError(f"Missing field[{self.Keyword.VmState}] to specify desired state for the VM")

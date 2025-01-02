@@ -34,29 +34,26 @@ class Util:
             if part == "":
                 continue
             real_cmd_list.append(part.replace("\n", ""))
-        try:
-            process = subprocess.Popen(real_cmd_list,
-                                        stdout=subprocess.PIPE,
-                                        stderr=subprocess.PIPE,
-                                        text=True  # Output as strings instead of bytes
-                                    )
-            # Collect output line-by-line in real time
-            stdout_lines = []
-            for line in process.stdout:
-                print(line, end="")  # Print to console in real time
-                stdout_lines.append(line)  # Store line in list for result
+        process = subprocess.Popen(real_cmd_list,
+                                    stdout=subprocess.PIPE,
+                                    stderr=subprocess.PIPE,
+                                    text=True  # Output as strings instead of bytes
+                                )
+        # Collect output line-by-line in real time
+        stdout_lines = []
+        for line in process.stdout:
+            print(line, end="")  # Print to console in real time
+            stdout_lines.append(line)  # Store line in list for result
 
-            # Collect standard error output
-            stderr_output, _ = process.communicate()
+        # Collect standard error output
+        _, stderr_output = process.communicate()
 
-            # Wait for the process to complete
-            return_code = process.wait()
-            if return_code != 0:
-                real_cmd_str = " ".join(real_cmd_list)
-                raise SystemError(f"command [{real_cmd_str}] run failed with error:{return_code}")
-            return ProcessResult(return_code, stdout_lines, stderr_output)
-        except Exception as e:
-            raise SystemError(f"Error: {e}")
+        # Wait for the process to complete
+        return_code = process.wait()
+        if return_code != 0:
+            real_cmd_str = " ".join(real_cmd_list)
+            raise SystemError(f"command [{real_cmd_str}] run failed with code:{return_code},\nError:{stderr_output}")
+        return ProcessResult(return_code, stdout_lines, stderr_output)
         
     def compare_dict(first: dict, second: dict) -> bool:
         for key in first.keys():
