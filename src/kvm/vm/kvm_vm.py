@@ -65,7 +65,9 @@ class KvmVm:
             raise ValueError(f"Missing field [{self.Keyword.VmPath}] in Vm Data")
         if not os.path.isabs(vm_path):
             self.log.info(f"found relative path [{self.Keyword.VmPath}]=[{vm_path}]")
-            vm_path = Util.abs_path(os.path.dirname(self.Args.path), vm_path)
+            data_file_path = os.path.dirname(self.Args.path)
+            self.log.info(f"create abspath from data file path[{data_file_path}]")
+            vm_path = Util.abs_path(data_file_path, vm_path)
             self.log.info(f"Update [{self.Keyword.VmPath}]=[{vm_path}]")
             self.VmData[self.Keyword.VmPath] = vm_path
         if not os.path.isdir(vm_path):
