@@ -161,8 +161,9 @@ class KvmVm:
         self.log.info(f"VM [{self.VmName}] created.")
 
     def create_vm_cmd(self) -> str:
+        ram_in_mb= self.VmData[self.Keyword.RamInGb] * 1024
         vm_create_cmd = f"""virt-install --print-xml --name {self.VmName} \n
-                            --ram {self.VmData[self.Keyword.RamInGb]}G \n
+                            --ram {ram_in_mb} \n
                             --vcpus {self.VmData[self.Keyword.SMP]}"""
         for disk in self.Disks:
             vm_create_cmd = f"""{vm_create_cmd} \n

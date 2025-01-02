@@ -33,7 +33,7 @@ class Util:
         for part in cmd_list:
             if part == "":
                 continue
-            real_cmd_list.append(part)
+            real_cmd_list.append(part.replace("\n", ""))
         try:
             process = subprocess.Popen(real_cmd_list,
                                         stdout=subprocess.PIPE,
@@ -52,10 +52,11 @@ class Util:
             # Wait for the process to complete
             return_code = process.wait()
             if return_code != 0:
-                raise SystemError(f"Error: command [{command}] run failed with error:{return_code}")
+                real_cmd_str = " ".join(real_cmd_list)
+                raise SystemError(f"command [{real_cmd_str}] run failed with error:{return_code}")
             return ProcessResult(return_code, stdout_lines, stderr_output)
         except Exception as e:
-            raise SystemError(f"Error: Command [{command}] got an error: {e}")
+            raise SystemError(f"Error: {e}")
         
     def compare_dict(first: dict, second: dict) -> bool:
         for key in first.keys():
