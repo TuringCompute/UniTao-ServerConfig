@@ -42,8 +42,8 @@ class Util:
         # Collect output line-by-line in real time
         stdout_lines = []
         for line in process.stdout:
-            print(line, end="")  # Print to console in real time
-            stdout_lines.append(line)  # Store line in list for result
+            real_line = line.replace("\n","")
+            stdout_lines.append(real_line)  # Store line in list for result
 
         # Collect standard error output
         _, stderr_output = process.communicate()
