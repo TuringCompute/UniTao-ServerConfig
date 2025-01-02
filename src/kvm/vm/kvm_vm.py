@@ -173,6 +173,8 @@ class KvmVm:
     def create_vm_cmd(self) -> str:
         ram_in_mb= self.VmData[self.Keyword.RamInGb] * 1024
         vm_create_cmd = f"""virt-install --print-xml --name {self.VmName} \n
+                            --os-type {self.VmData[self.Keyword.OsType]} \n
+                            --os-variant {self.VmData[self.Keyword.OsVariant]} \n
                             --ram {ram_in_mb} \n
                             --vcpus {self.VmData[self.Keyword.SMP]}"""
         for disk in self.Disks:
