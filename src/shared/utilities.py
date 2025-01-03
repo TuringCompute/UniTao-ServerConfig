@@ -80,3 +80,24 @@ class Util:
         if file_ext!=".json":
             raise ValueError(f"Invalid path, data file should be an json file. got [{file_name}] instead")
         return data_name
+
+    def is_int_str(int_str: str, radix: int = None) -> bool:
+        try:
+            if radix is None:
+                int(int_str)
+            else:
+                int(int_str, radix)
+            return True
+        except ValueError:
+            return False
+
+    def parse_mac_address(macAddr: str) -> list:
+        mac_parts = macAddr.split(":")
+        if len(mac_parts)!=6:
+            raise ValueError(f"Invalid Mac Address[{macAddr}], expect 6 sections")
+        for part in mac_parts:
+            if len(part) != 2:
+                raise ValueError(f"Invalid Mac Address[{macAddr}], [{part}] lenth should be 2")
+            if not Util.is_int_str(part, 16):
+                raise ValueError(f"Invalid Mac Address[{macAddr}], [{part}] is not a hex number")
+        return mac_parts

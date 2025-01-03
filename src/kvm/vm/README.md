@@ -14,7 +14,8 @@ This utilities will use all the resource and attribute given by json file and cr
     "disks": [],            // list of path to vm disk definition json file, path can use {vmPath} as reference for relative path
     "networks": [],         // list of path to vm network definition json file, path can use {vmPath} as reference for relative path
     "vmState": "running",   // desired vm state. running, stopped, notExists
-    "vmDefPath": "{path}"   // folder that can store Vm Definition creation script and Vm definition XML file    
+    "useCloudInit": true,   // define how the VM will prepare itself
+    "ciIsoPath": "{path}"   // path to Cloud Init ISO image file    
 }
 
 example.json
@@ -29,7 +30,8 @@ example.json
        "{vmPath}/data/local_bridge.json"
     ],
     "vmState": "running",
-    "vmDefPath": "{vmPath}"
+    "useCloudInit": true,
+    "ciIsoPath": "{vmPath}/cloud_init.iso"
 }
 
 {disk_name}.json
@@ -39,15 +41,24 @@ example.json
 
 {network_name}.json
 {
-    "ifaceType": "bridge",      // VM net interface type. bridge/macvtap
-    "BridgeName": "ext_net"     // bridge the vm net interface to connect with
+    "ifaceType": "bridge",                  // VM net interface type. bridge/macvtap
+    "BridgeName": "ext_net",                // bridge the vm net interface to connect with
+    "macAddress": "{mac_address_str}",      // mac address to be assign to the network interface
+    "dhcp4": true,                          // if the interface to use dhcp service to get ipv4 address
+    "ip4": "ip v4 address{x.x.x.x/x}",      // if not dhcp, the IP address to be assigned to the interface
+    "gateway4": "gateway ipv4. {x.x.x.x}"   // if this is the one connect to external network, the gateway setting
+    
 }
 
 {
-    "ifaceType": "macvtap",                  // VM net interface type. bridge/macvtap
-    "TapSource": "{ext iface/bridge name}",  // the network interface on host for this vm interface to tap into
-    "TapMode": "{tap mode value}"            // define how vm interface is tapping into host net interface
-                                             // possible values [bridge, private, vepa, passthru]
+    "ifaceType": "macvtap",                 // VM net interface type. bridge/macvtap
+    "TapSource": "{ext iface/bridge name}", // the network interface on host for this vm interface to tap into
+    "TapMode": "{tap mode value}",          // define how vm interface is tapping into host net interface
+                                            // possible values [bridge, private, vepa, passthru]
+    "macAddress": "{mac_address_str}",      // mac address to be assign to the network interface
+    "dhcp4": true,                          // if the interface to use dhcp service to get ipv4 address
+    "ip4": "ip v4 address{x.x.x.x/x}",      // if not dhcp, the IP address to be assigned to the interface
+    "gateway4": "gateway ipv4. {x.x.x.x}"   // if this is the one connect to external network, the gateway setting
 }
 
  ```
