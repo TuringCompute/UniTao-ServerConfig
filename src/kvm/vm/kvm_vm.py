@@ -197,7 +197,7 @@ class KvmVm:
             net_meta_data = net.create_meta_data(idx)
             meta_data.extend(net_meta_data)
         with open(meta_data_path, "w") as fp:
-            fp.writelines(meta_data_path)
+            fp.writelines(meta_data)
         return meta_data_path
 
     def create_vm(self):
