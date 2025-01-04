@@ -177,8 +177,11 @@ class KvmVm:
     def create_ci_user_data(self):
         user_data_path = os.path.join(self.VmData[self.Keyword.VmPath], "user-data.yaml")
         user_data = []
-        for net in self.Networks:
-            net_user_data = net.ci_user_data()
+        user_data_header = KvmNetwork.create_user_data_header()
+        user_data.extend(user_data_header)
+        for idx in range(0, len(self.Networks)):
+            net = self.Networks[idx]
+            net_user_data = net.create_user_data(idx)
             user_data.extend(net_user_data)
         with open(user_data_path, "w") as fp:
             fp.writelines(user_data)
@@ -187,8 +190,9 @@ class KvmVm:
     def create_ci_meta_data(self):
         meta_data_path = os.path.join(self.VmData[self.Keyword.VmPath], "meta-data.yaml")
         meta_data = []
-        for net in self.Networks:
-            net_meta_data = net.ci_meta_data()
+        for idx in range(0, len(self.Networks)):
+            net = self.Networks[idx]
+            net_meta_data = net.create_meta_data(idx)
             meta_data.extend(net_meta_data)
         with open(meta_data_path, "w") as fp:
             fp.writelines(meta_data_path)
@@ -349,9 +353,8 @@ class KvmNetwork:
             raise ValueError(f"Missing field[{self.Keyword.IPv4}]")
         self.validate_ipv4_address(ipv4)
         gateway = self.NetData.get(self.Keyword.Gateway4, None)
-        if gateway is None:
-            raise ValueError(f"Missing field[{self.Keyword.Gateway4}]")
-        self.validate_ipv4(gateway)
+        if gateway is not None:
+            self.validate_ipv4(gateway)
 
     def validate_bridge(self):
         device_name = self.NetData.get(self.Keyword.BridgeName, None)
@@ -391,12 +394,49 @@ class KvmNetwork:
         if self.NetData[self.Keyword.IfaceType] == self.Keyword.InterfaceTypes.MacVTap:
             return f"type=direct,source={self.NetData[self.Keyword.BridgeName]},source_mode={self.Keyword.TapModes.Bridge},model=virtio"
 
-    def generate_meta(self) -> list:
-        meta_lines = []
-        return meta_lines
+    def create_meta_data(self, net_idx: int) -> list:
+        mac_name = f"mac{net_idx}"
+        ip4_name = f"ipv4_{net_idx}"
+        meta_data = []
+        if not self.NetData[self.Keyword.UseDHCP4]:
+            meta_data.extend([
+                f"{mac_name}: \"{self.NetData[self.Keyword.MacAddress]}\"",
+                f"{ip4_name}: \"{self.NetData[self.Keyword.IPv4]}\"",
+                ""
+            ])
+        return meta_data
 
-    def generate_userdata(self) -> list:
-        user_data = []
+    @staticmethod
+    def create_user_data_header():
+        return [
+            "network:",
+            "  version: 2",
+            "  renderer: networkd",
+            "  ethernets:"
+        ]
+
+    def create_user_data(self, net_idx: int) -> list:
+        mac_name = f"mac{net_idx}"
+        ip4_name = f"ipv4_{net_idx}"
+        user_data = [
+            f"    ${{{mac_name}}}:"
+        ]
+        
+        if self.NetData[self.Keyword.UseDHCP4]:
+            user_data.append("      dhcp4: yes")
+        else:
+            user_data.extend([
+                "      dhcp4: no",
+                "      addresses:",
+               f"        -${{{ip4_name}}}"
+            ])
+            gateway = self.NetData.get(self.Keyword.Gateway4, None)
+            if gateway is not None:
+                user_data.extend([
+                    "      routes:",
+                    "        - to: 0.0.0.0/0",
+                   f"          via: {gateway}"
+                ])
         return user_data
 
 
