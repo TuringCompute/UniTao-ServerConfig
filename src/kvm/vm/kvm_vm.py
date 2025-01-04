@@ -28,6 +28,7 @@ class KvmVm:
         VmPath = "vmPath"
         UseCloudInit = "useCloudInit"
         CIIsoPath = "ciIsoPath"
+        DefaultPWD = "defaultPWD"
 
         class VmStates:
             Running = "running"
@@ -177,7 +178,17 @@ class KvmVm:
     def create_ci_user_data(self):
         user_data_path = os.path.join(self.VmData[self.Keyword.VmPath], "user-data.yaml")
         self.log.info(f"Create user-data file [{user_data_path}]")
-        user_data = []
+        user_data = [
+            "#cloud-config"
+        ]
+        default_pwd = self.VmData.get(self.Keyword.DefaultPWD, None)
+        if default_pwd is not None: 
+            user_data.extend([
+                "# Modify default user password and set the password to be expired after first login"
+                f"password: {default_pwd}",
+                "chpasswd: { expire: True}", 
+                ""
+            ])
         user_data_header = KvmNetwork.create_user_data_header()
         user_data.extend(user_data_header)
         for idx in range(0, len(self.Networks)):
@@ -409,6 +420,7 @@ class KvmNetwork:
     @staticmethod
     def create_user_data_header():
         return [
+            "# Setup Network IP4 addresses"
             "network:\n",
             "  version: 2\n",
             "  renderer: networkd\n",

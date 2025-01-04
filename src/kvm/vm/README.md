@@ -15,7 +15,8 @@ This utilities will use all the resource and attribute given by json file and cr
     "networks": [],         // list of path to vm network definition json file, path can use {vmPath} as reference for relative path
     "vmState": "running",   // desired vm state. running, stopped, notExists
     "useCloudInit": true,   // define how the VM will prepare itself
-    "ciIsoPath": "{path}"   // path to Cloud Init ISO image file    
+    "ciIsoPath": "{path}",  // path to Cloud Init ISO image file
+    "defaultPWD": "{pwd}"   // setup default password for default user and expire after first login   
 }
 
 example.json
