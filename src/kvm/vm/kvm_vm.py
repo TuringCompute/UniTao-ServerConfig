@@ -214,11 +214,11 @@ class KvmVm:
         vm_def_create_file = os.path.join(vm_path, f"vm_def_create_{self.VmName}.sh")
         self.log.info(f"Create bash file that can create vm definition XML file. {vm_def_create_file}")
         with open(vm_def_create_file, "w") as fp:
-            fp.write(vm_create_cmd)
+            fp.write(" \\".join(vm_create_cmd))
         self.log.info("vm def creation bash created.")
         vm_def_file = os.path.join(vm_path, f"vm_def_{self.VmName}.xml")
         self.log.info(f"Run def creation command to generate VM definition XML file. [{vm_def_file}]")
-        cmd_result = Util.run_command(vm_create_cmd)
+        cmd_result = Util.run_command(" ".join(vm_create_cmd))
         with open(vm_def_file, "w") as fp:
             fp.write(cmd_result.stdout)
         self.log.info(f"VM definition file created")
@@ -228,24 +228,22 @@ class KvmVm:
 
     def create_vm_cmd(self) -> str:
         ram_in_mb= self.VmData[self.Keyword.RamInGb] * 1024
-        vm_create_cmd = f"""virt-install --print-xml --name {self.VmName} \n
-                            --os-type {self.VmData[self.Keyword.OsType]} \n
-                            --os-variant {self.VmData[self.Keyword.OsVariant]} \n
-                            --ram {ram_in_mb} \n
-                            --vcpus {self.VmData[self.Keyword.SMP]}"""
+        vm_create_cmd = [
+            f"virt-install --print-xml 2 --name {self.VmName}"
+            f"  --os-type {self.VmData[self.Keyword.OsType]}"
+            f"  --os-variant {self.VmData[self.Keyword.OsVariant]}"
+            f"  --ram {ram_in_mb}"
+            f"  --vcpus {self.VmData[self.Keyword.SMP]}"
+        ]
         for disk in self.Disks:
-            vm_create_cmd = f"""{vm_create_cmd} \n
-                                --disk {disk.disk_cmd()}"""
+            vm_create_cmd.append(f"--disk {disk.disk_cmd()}")
         for net in self.Networks:
-            vm_create_cmd = f"""{vm_create_cmd} \n
-                                --network {net.net_cmd()}"""
+            vm_create_cmd.append(f"--network {net.net_cmd()}")
         if self.VmData[self.Keyword.UseCloudInit]:
-            vm_create_cmd = f"""{vm_create_cmd} \n
-                                --cdrom={self.VmData[self.Keyword.CIIsoPath]}"""
-        vm_create_cmd = f"""{vm_create_cmd} \n
-                            --graphics none --console pty,target_type=serial"""
+            vm_create_cmd.append(f"--cdrom={self.VmData[self.Keyword.CIIsoPath]}")
+        vm_create_cmd.append(f"--graphics none --console pty,target_type=serial")
         return vm_create_cmd
-
+    
     def vm_running(self) -> bool:
         cmd_result = Util.run_command("virsh list --name")
         return self.VmName in cmd_result.stdout_lines
