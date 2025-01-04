@@ -400,42 +400,42 @@ class KvmNetwork:
         meta_data = []
         if not self.NetData[self.Keyword.UseDHCP4]:
             meta_data.extend([
-                f"{mac_name}: \"{self.NetData[self.Keyword.MacAddress]}\"",
-                f"{ip4_name}: \"{self.NetData[self.Keyword.IPv4]}\"",
-                ""
+                f"{mac_name}: \"{self.NetData[self.Keyword.MacAddress]}\"\n",
+                f"{ip4_name}: \"{self.NetData[self.Keyword.IPv4]}\"\n",
+                "\n"
             ])
         return meta_data
 
     @staticmethod
     def create_user_data_header():
         return [
-            "network:",
-            "  version: 2",
-            "  renderer: networkd",
-            "  ethernets:"
+            "network:\n",
+            "  version: 2\n",
+            "  renderer: networkd\n",
+            "  ethernets:\n"
         ]
 
     def create_user_data(self, net_idx: int) -> list:
         mac_name = f"mac{net_idx}"
         ip4_name = f"ipv4_{net_idx}"
         user_data = [
-            f"    ${{{mac_name}}}:"
+            f"    ${{{mac_name}}}:\n"
         ]
         
         if self.NetData[self.Keyword.UseDHCP4]:
-            user_data.append("      dhcp4: yes")
+            user_data.append("      dhcp4: yes\n")
         else:
             user_data.extend([
-                "      dhcp4: no",
-                "      addresses:",
-               f"        -${{{ip4_name}}}"
+                "      dhcp4: no\n",
+                "      addresses:\n",
+               f"        -${{{ip4_name}}}\n"
             ])
             gateway = self.NetData.get(self.Keyword.Gateway4, None)
             if gateway is not None:
                 user_data.extend([
-                    "      routes:",
-                    "        - to: 0.0.0.0/0",
-                   f"          via: {gateway}"
+                    "      routes:\n",
+                    "        - to: 0.0.0.0/0\n",
+                   f"          via: {gateway}\n"
                 ])
         return user_data
 

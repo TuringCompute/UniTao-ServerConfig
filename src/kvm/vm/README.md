@@ -44,7 +44,7 @@ example.json
     "ifaceType": "bridge",                  // VM net interface type. bridge/macvtap
     "BridgeName": "ext_net",                // bridge the vm net interface to connect with
     "macAddress": "{mac_address_str}",      // mac address to be assign to the network interface
-    "dhcp4": true,                          // if the interface to use dhcp service to get ipv4 address
+    "useDHCP4": true,                          // if the interface to use dhcp service to get ipv4 address
     "ip4": "ip v4 address{x.x.x.x/x}",      // if not dhcp, the IP address to be assigned to the interface
     "gateway4": "gateway ipv4. {x.x.x.x}"   // if this is the one connect to external network, the gateway setting
     
