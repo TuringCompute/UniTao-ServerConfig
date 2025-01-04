@@ -176,6 +176,7 @@ class KvmVm:
     
     def create_ci_user_data(self):
         user_data_path = os.path.join(self.VmData[self.Keyword.VmPath], "user-data.yaml")
+        self.log.info(f"Create user-data file [{user_data_path}]")
         user_data = []
         user_data_header = KvmNetwork.create_user_data_header()
         user_data.extend(user_data_header)
@@ -189,6 +190,7 @@ class KvmVm:
 
     def create_ci_meta_data(self):
         meta_data_path = os.path.join(self.VmData[self.Keyword.VmPath], "meta-data.yaml")
+        self.log.info(f"Create meta-data file [{meta_data_path}]")
         meta_data = []
         for idx in range(0, len(self.Networks)):
             net = self.Networks[idx]
