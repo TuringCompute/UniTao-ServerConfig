@@ -166,7 +166,7 @@ class KvmVm:
         user_data_path = self.create_ci_user_data()
         meta_data_path = self.create_ci_meta_data()
         self.log.info(f"Generate ISO [{ci_iso_file}]")
-        iso_gen_cmd = f"genisoimage -output {ci_iso_file} -volid cidata -joliet -rock user-data={user_data_path} meta-data={meta_data_path}"
+        iso_gen_cmd = f"genisoimage -output {ci_iso_file} -volid cidata -joliet -rock {user_data_path} {meta_data_path}"
         iso_gen_sh_path = os.path.join(self.VmData[self.Keyword.VmPath], "gen_cloud_init_iso.sh")
         self.log.info(f"Record Cloud Init iso generate command @[{iso_gen_sh_path}]")
         with open(iso_gen_sh_path, "w") as fp:
@@ -220,7 +220,7 @@ class KvmVm:
         self.log.info(f"Run def creation command to generate VM definition XML file. [{vm_def_file}]")
         cmd_result = Util.run_command(vm_create_cmd)
         with open(vm_def_file, "w") as fp:
-            fp.writelines(cmd_result.stdout_lines)
+            fp.write(cmd_result.stdout)
         self.log.info(f"VM definition file created")
         self.log.info(f"Create vm [{self.VmName}] using definition XML. [{vm_def_file}]")
         Util.run_command(f"virsh define {vm_def_file}")

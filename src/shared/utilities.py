@@ -10,7 +10,7 @@ class ProcessResult:
     stderr: str
 
     def __init__(self, return_code: int, output_lines: list[str], err: str):
-        self.stdout = "".join(output_lines)
+        self.stdout = "\n".join(output_lines)
         self.stdout_lines = output_lines
         self.returncode = return_code
         self.stderr = err
