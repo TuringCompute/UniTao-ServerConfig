@@ -398,10 +398,14 @@ class KvmNetwork:
                 raise ValueError(f"Invalid IPv4[{ipv4}], expect all segment are int. found non-int[{part}]")
 
     def net_cmd(self) -> str:
+        mac_part = ""
+        mac_address = self.NetData.get(self.Keyword.MacAddress, None)
+        if mac_address is not None:
+            mac_part = f",mac={mac_address}"
         if self.NetData[self.Keyword.IfaceType] == self.Keyword.InterfaceTypes.Bridge:
-            return f"{self.Keyword.InterfaceTypes.Bridge}={self.NetData[self.Keyword.BridgeName]},model=virtio"
+            return f"{self.Keyword.InterfaceTypes.Bridge}={self.NetData[self.Keyword.BridgeName]},model=virtio{mac_part}"
         if self.NetData[self.Keyword.IfaceType] == self.Keyword.InterfaceTypes.MacVTap:
-            return f"type=direct,source={self.NetData[self.Keyword.BridgeName]},source_mode={self.Keyword.TapModes.Bridge},model=virtio"
+            return f"type=direct,source={self.NetData[self.Keyword.BridgeName]},source_mode={self.Keyword.TapModes.Bridge},model=virtio{mac_part}"
 
     def create_meta_data(self, net_idx: int) -> list:
         mac_name = f"mac{net_idx}"
