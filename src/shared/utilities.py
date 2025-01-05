@@ -105,7 +105,7 @@ class Util:
     def write_file(file_path: str, mode: str, file_data):
         if isinstance(file_data, list):
             file_data_str = "\n".join(file_data)
-        elif not isinstance(file_data, str):
+        elif isinstance(file_data, str):
             file_data_str = file_data
         else:
             raise ValueError(f"Invalid type of param: [file_data]=type[{type(file_data)}] should be either string or list[string]")
