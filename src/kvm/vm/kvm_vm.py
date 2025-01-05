@@ -234,7 +234,7 @@ class KvmVm:
             fp.write(cmd_result.stdout)
         self.log.info(f"VM definition file created")
         self.log.info(f"Create vm [{self.VmName}] using definition XML. [{vm_def_file}]")
-        Util.run_command(f"virsh define {vm_def_file}")
+        Util.run_command(f"virsh create {vm_def_file}")
         self.log.info(f"VM [{self.VmName}] created.")
 
     def create_vm_cmd(self) -> str:
