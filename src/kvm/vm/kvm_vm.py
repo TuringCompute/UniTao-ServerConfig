@@ -436,7 +436,7 @@ class KvmNetwork:
     @staticmethod
     def create_user_data_header():
         return [
-            "# Setup Network IP4 addresses"
+            "# Setup Network IP4 addresses",
             "network:",
             "  version: 2",
             "  renderer: networkd",
