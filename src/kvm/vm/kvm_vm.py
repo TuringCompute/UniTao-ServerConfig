@@ -184,9 +184,9 @@ class KvmVm:
         default_pwd = self.VmData.get(self.Keyword.DefaultPWD, None)
         if default_pwd is not None: 
             user_data.extend([
-                "# Modify default user password and set the password to be expired after first login"
+                "# Modify default user password and set the password to be expired after first login",
                 f"password: {default_pwd}",
-                "chpasswd: { expire: True}", 
+                "chpasswd: { expire: True }", 
                 "",
                 ""
             ])
