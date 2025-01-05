@@ -167,7 +167,7 @@ class KvmVm:
         user_data_path = self.create_ci_user_data()
         meta_data_path = self.create_ci_meta_data()
         self.log.info(f"Generate ISO [{ci_iso_file}]")
-        iso_gen_cmd = f"genisoimage -output {ci_iso_file} -volid cidata -joliet -rock {user_data_path} {meta_data_path}"
+        iso_gen_cmd = f"cloud-localds {ci_iso_file} {user_data_path} {meta_data_path}"
         iso_gen_sh_path = os.path.join(self.VmData[self.Keyword.VmPath], "gen_cloud_init_iso.sh")
         self.log.info(f"Record Cloud Init iso generate command @[{iso_gen_sh_path}]")
         with open(iso_gen_sh_path, "w") as fp:
