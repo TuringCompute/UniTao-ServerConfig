@@ -238,18 +238,18 @@ class KvmVm:
     def create_vm_cmd(self) -> str:
         ram_in_mb= self.VmData[self.Keyword.RamInGb] * 1024
         vm_create_cmd = [
-            f"virt-install --print-xml 2 --name {self.VmName}"
-            f"  --os-type {self.VmData[self.Keyword.OsType]}"
-            f"  --os-variant {self.VmData[self.Keyword.OsVariant]}"
-            f"  --ram {ram_in_mb}"
-            f"  --vcpus {self.VmData[self.Keyword.SMP]}"
+            f"virt-install --print-xml --name {self.VmName} \\"
+            f"  --os-type {self.VmData[self.Keyword.OsType]} \\"
+            f"  --os-variant {self.VmData[self.Keyword.OsVariant]} \\"
+            f"  --ram {ram_in_mb} \\"
+            f"  --vcpus {self.VmData[self.Keyword.SMP]} \\"
         ]
         for disk in self.Disks:
-            vm_create_cmd.append(f"--disk {disk.disk_cmd()}")
+            vm_create_cmd.append(f"--disk {disk.disk_cmd()} \\")
         for net in self.Networks:
-            vm_create_cmd.append(f"--network {net.net_cmd()}")
+            vm_create_cmd.append(f"--network {net.net_cmd()} \\")
         if self.VmData[self.Keyword.UseCloudInit]:
-            vm_create_cmd.append(f"--cdrom {self.VmData[self.Keyword.CIIsoPath]}")
+            vm_create_cmd.append(f"--disk path={self.VmData[self.Keyword.CIIsoPath]},device=cdrom \\")
         vm_create_cmd.append(f"--graphics vnc,listen=0.0.0.0")
         return vm_create_cmd
     
