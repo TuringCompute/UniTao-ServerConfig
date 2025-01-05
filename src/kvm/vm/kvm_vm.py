@@ -179,16 +179,23 @@ class KvmVm:
         user_data_path = os.path.join(self.VmData[self.Keyword.VmPath], "user-data.yaml")
         self.log.info(f"Create user-data file [{user_data_path}]")
         user_data = [
-            "#cloud-config"
+            "#cloud-config",
+            "",
+            "# Basic configuration, change host name",
+            "hostname: testvm"
         ]
         default_pwd = self.VmData.get(self.Keyword.DefaultPWD, None)
         if default_pwd is not None: 
             user_data.extend([
                 "# Modify default user password and set the password to be expired after first login",
-                f"password: {default_pwd}",
-                "chpasswd: { expire: True }", 
+                "users:",
+                "  - name: ubuntu",
+               f"    passwd: {default_pwd}",
+                "    lock_passwd: false",
+                "    sudo: ALL=(ALL) NOPASSWD:ALL",
+                "    groups: sudo",
+                "    shell: /bin/bash",
                 "",
-                "hostname: testvm",
                 ""
             ])
         user_data_header = KvmNetwork.create_user_data_header()
