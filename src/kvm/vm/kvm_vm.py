@@ -250,7 +250,7 @@ class KvmVm:
             vm_create_cmd.append(f"--network {net.net_cmd()}")
         if self.VmData[self.Keyword.UseCloudInit]:
             vm_create_cmd.append(f"--cdrom={self.VmData[self.Keyword.CIIsoPath]}")
-        vm_create_cmd.append(f"--graphics none --console pty,target_type=serial")
+        vm_create_cmd.append(f"--graphics vnc,listen=0.0.0.0")
         return vm_create_cmd
     
     def vm_running(self) -> bool:
