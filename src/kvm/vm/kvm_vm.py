@@ -223,7 +223,7 @@ class KvmVm:
         vm_create_cmd = self.create_vm_cmd()
         vm_def_create_file = os.path.join(vm_path, f"vm_def_create_{self.VmName}.sh")
         self.log.info(f"Create bash file that can create vm definition XML file. {vm_def_create_file}")
-        Util.write_file(vm_def_create_file, "w", vm_create_cmd)
+        Util.write_file(vm_def_create_file, "w", " \\".join(vm_create_cmd))
         self.log.info("vm def creation bash created.")
         vm_def_file = os.path.join(vm_path, f"vm_def_{self.VmName}.xml")
         self.log.info(f"Run def creation command to generate VM definition XML file. [{vm_def_file}]")
@@ -238,18 +238,18 @@ class KvmVm:
     def create_vm_cmd(self) -> str:
         ram_in_mb= self.VmData[self.Keyword.RamInGb] * 1024
         vm_create_cmd = [
-            f"virt-install --print-xml --name {self.VmName} \\"
-            f"  --os-type {self.VmData[self.Keyword.OsType]} \\"
-            f"  --os-variant {self.VmData[self.Keyword.OsVariant]} \\"
-            f"  --ram {ram_in_mb} \\"
-            f"  --vcpus {self.VmData[self.Keyword.SMP]} \\"
+            f"virt-install --print-xml --name {self.VmName}"
+            f"  --os-type {self.VmData[self.Keyword.OsType]}"
+            f"  --os-variant {self.VmData[self.Keyword.OsVariant]}"
+            f"  --ram {ram_in_mb}"
+            f"  --vcpus {self.VmData[self.Keyword.SMP]}"
         ]
         for disk in self.Disks:
-            vm_create_cmd.append(f"--disk {disk.disk_cmd()} \\")
+            vm_create_cmd.append(f"--disk {disk.disk_cmd()}")
         for net in self.Networks:
-            vm_create_cmd.append(f"--network {net.net_cmd()} \\")
+            vm_create_cmd.append(f"--network {net.net_cmd()}")
         if self.VmData[self.Keyword.UseCloudInit]:
-            vm_create_cmd.append(f"--disk path={self.VmData[self.Keyword.CIIsoPath]},device=cdrom \\")
+            vm_create_cmd.append(f"--disk path={self.VmData[self.Keyword.CIIsoPath]},device=cdrom")
         vm_create_cmd.append(f"--graphics vnc,listen=0.0.0.0")
         return vm_create_cmd
     
