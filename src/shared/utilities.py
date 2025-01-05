@@ -108,7 +108,7 @@ class Util:
         elif not isinstance(file_data, str):
             file_data_str = file_data
         else:
-            raise ValueError("Invalid type of param: [file_data] should be either string or list[string]")
+            raise ValueError(f"Invalid type of param: [file_data]=type[{type(file_data)}] should be either string or list[string]")
         if mode not in ["w", "w+"]:
             raise ValueError("invalid write mode, expect w or w+")
         with open(file_path, mode) as fp:
