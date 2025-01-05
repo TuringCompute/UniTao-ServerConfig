@@ -188,7 +188,7 @@ class KvmVm:
         if default_pwd is not None: 
             user_data.extend([
                 "# Modify default user password and set the password to be expired after first login",
-                "password: helloworld",
+               f"password: {self.VmData[self.Keyword.DefaultPWD]}",
                 "",
                 ""
             ])
