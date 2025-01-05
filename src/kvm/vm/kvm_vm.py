@@ -188,13 +188,7 @@ class KvmVm:
         if default_pwd is not None: 
             user_data.extend([
                 "# Modify default user password and set the password to be expired after first login",
-                "users:",
-                "  - name: ubuntu",
-               f"    passwd: {default_pwd}",
-                "    lock_passwd: false",
-                "    sudo: ALL=(ALL) NOPASSWD:ALL",
-                "    groups: sudo",
-                "    shell: /bin/bash",
+                "password: helloworld",
                 "",
                 ""
             ])
