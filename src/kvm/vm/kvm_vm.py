@@ -188,6 +188,7 @@ class KvmVm:
                 f"password: {default_pwd}",
                 "chpasswd: { expire: True }", 
                 "",
+                "hostname: testvm",
                 ""
             ])
         user_data_header = KvmNetwork.create_user_data_header()
@@ -202,7 +203,11 @@ class KvmVm:
     def create_ci_meta_data(self):
         meta_data_path = os.path.join(self.VmData[self.Keyword.VmPath], "meta-data.yaml")
         self.log.info(f"Create meta-data file [{meta_data_path}]")
-        meta_data = []
+        meta_data = [
+            "instance-id: iid-local01",
+            "local-hostname: testvm",
+            ""
+        ]
         for idx in range(0, len(self.Networks)):
             net = self.Networks[idx]
             net_meta_data = net.create_meta_data(idx)
