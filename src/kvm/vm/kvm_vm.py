@@ -275,7 +275,7 @@ class KvmVm:
             self.log.info(f"VM[{self.VmName}] is running")
             if self.VmData[self.Keyword.VmState] == self.Keyword.VmStates.Stopped:
                 self.log.info(f"stop VM[{self.VmName}]")
-                Util.run_command(f"virsh shutdown {self.VmName}")
+                Util.run_command(f"virsh destroy {self.VmName}")
             return
         if self.VmData[self.Keyword.VmState] == self.Keyword.VmStates.Running:
             self.log.info(f"VM[{self.VmName}] is not running, start it.")
