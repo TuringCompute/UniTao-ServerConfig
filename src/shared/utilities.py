@@ -101,3 +101,15 @@ class Util:
             if not Util.is_int_str(part, 16):
                 raise ValueError(f"Invalid Mac Address[{macAddr}], [{part}] is not a hex number")
         return mac_parts
+    
+    def write_file(file_path: str, mode: str, file_data):
+        if isinstance(file_data, list):
+            file_data_str = "\n".join(file_data)
+        elif not isinstance(file_data, str):
+            file_data_str = file_data
+        else:
+            raise ValueError("Invalid type of param: [file_data] should be either string or list[string]")
+        if mode not in ["w", "w+"]:
+            raise ValueError("invalid write mode, expect w or w+")
+        with open(file_path, mode) as fp:
+            fp.write(file_data_str)

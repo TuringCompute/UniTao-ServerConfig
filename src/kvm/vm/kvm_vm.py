@@ -187,6 +187,7 @@ class KvmVm:
                 "# Modify default user password and set the password to be expired after first login"
                 f"password: {default_pwd}",
                 "chpasswd: { expire: True}", 
+                "",
                 ""
             ])
         user_data_header = KvmNetwork.create_user_data_header()
@@ -195,8 +196,7 @@ class KvmVm:
             net = self.Networks[idx]
             net_user_data = net.create_user_data(idx)
             user_data.extend(net_user_data)
-        with open(user_data_path, "w") as fp:
-            fp.writelines(user_data)
+        Util.write_file(user_data_path, "w", user_data)
         return user_data_path
 
     def create_ci_meta_data(self):
@@ -207,8 +207,7 @@ class KvmVm:
             net = self.Networks[idx]
             net_meta_data = net.create_meta_data(idx)
             meta_data.extend(net_meta_data)
-        with open(meta_data_path, "w") as fp:
-            fp.writelines(meta_data)
+        Util.write_file(meta_data_path, "w", meta_data)
         return meta_data_path
 
     def create_vm(self):
@@ -224,8 +223,7 @@ class KvmVm:
         vm_create_cmd = self.create_vm_cmd()
         vm_def_create_file = os.path.join(vm_path, f"vm_def_create_{self.VmName}.sh")
         self.log.info(f"Create bash file that can create vm definition XML file. {vm_def_create_file}")
-        with open(vm_def_create_file, "w") as fp:
-            fp.write(" \\".join(vm_create_cmd))
+        Util.write_file(vm_def_create_file, "w", vm_create_cmd)
         self.log.info("vm def creation bash created.")
         vm_def_file = os.path.join(vm_path, f"vm_def_{self.VmName}.xml")
         self.log.info(f"Run def creation command to generate VM definition XML file. [{vm_def_file}]")
@@ -411,9 +409,10 @@ class KvmNetwork:
         meta_data = []
         if not self.NetData[self.Keyword.UseDHCP4]:
             meta_data.extend([
-                f"{mac_name}: \"{self.NetData[self.Keyword.MacAddress]}\"\n",
-                f"{ip4_name}: \"{self.NetData[self.Keyword.IPv4]}\"\n",
-                "\n"
+                f"{mac_name}: \"{self.NetData[self.Keyword.MacAddress]}\"",
+                f"{ip4_name}: \"{self.NetData[self.Keyword.IPv4]}\"",
+                "",
+                ""
             ])
         return meta_data
 
@@ -421,33 +420,33 @@ class KvmNetwork:
     def create_user_data_header():
         return [
             "# Setup Network IP4 addresses"
-            "network:\n",
-            "  version: 2\n",
-            "  renderer: networkd\n",
-            "  ethernets:\n"
+            "network:",
+            "  version: 2",
+            "  renderer: networkd",
+            "  ethernets:"
         ]
 
     def create_user_data(self, net_idx: int) -> list:
         mac_name = f"mac{net_idx}"
         ip4_name = f"ipv4_{net_idx}"
         user_data = [
-            f"    ${{{mac_name}}}:\n"
+            f"    ${{{mac_name}}}:"
         ]
         
         if self.NetData[self.Keyword.UseDHCP4]:
-            user_data.append("      dhcp4: yes\n")
+            user_data.append("      dhcp4: yes")
         else:
             user_data.extend([
-                "      dhcp4: no\n",
-                "      addresses:\n",
-               f"        -${{{ip4_name}}}\n"
+                "      dhcp4: no",
+                "      addresses:",
+               f"        -${{{ip4_name}}}"
             ])
             gateway = self.NetData.get(self.Keyword.Gateway4, None)
             if gateway is not None:
                 user_data.extend([
-                    "      routes:\n",
-                    "        - to: 0.0.0.0/0\n",
-                   f"          via: {gateway}\n"
+                    "      routes:",
+                    "        - to: 0.0.0.0/0",
+                   f"          via: {gateway}"
                 ])
         return user_data
 
