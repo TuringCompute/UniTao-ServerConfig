@@ -236,7 +236,7 @@ class KvmVm:
         Util.run_command(f"virsh create {vm_def_file}")
         self.log.info(f"VM [{self.VmName}] created.")
 
-    def create_vm_cmd(self) -> str:
+    def create_vm_cmd(self) -> list:
         ram_in_mb= self.VmData[self.Keyword.RamInGb] * 1024
         vm_create_cmd = [
             f"virt-install --print-xml --name {self.VmName}"
