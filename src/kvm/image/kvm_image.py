@@ -60,16 +60,19 @@ class KvmImage:
         elif image_format == KvmImage.Keyword.Formats.QCOW2:
             return "qcow2"
 
-    def __init__(self, logger: logging.Logger):
+    def __init__(self, data_path:str, logger: logging.Logger):
         self.log = logger
-        self.Args = KvmImage.parse_args()
-        if not os.path.exists(self.Args.path):
-            raise ValueError(f"Invalid path does not exists.[{self.Args.path}]")
-        self.ImagName = Util.file_data_name(self.Args.path)
-        self.ImageData = Util.read_json_file(self.Args.path)
+        self.DataPath = data_path
+        if self.DataPath is None:
+            args = KvmImage.parse_args()
+            self.DataPath = args.path
+        if not os.path.exists(self.DataPath):
+            raise ValueError(f"Invalid path does not exists.[{self.DataPath}]")
+            
+        self.ImagName = Util.file_data_name(self.DataPath)
+        self.ImageData = Util.read_json_file(self.DataPath)
         self.Validate()
         
-    
     def Validate(self):
         if not isinstance(self.ImageData, dict):
             raise ValueError(f"Invalid image data, not dict")
@@ -78,7 +81,7 @@ class KvmImage:
             raise ValueError(f"Missing field [{self.Keyword.ImagePath}] in Image Data")
         if not os.path.isabs(image_path):
             self.log.info(f"found relative path [{self.Keyword.ImagePath}]=[{image_path}]")
-            image_path = Util.abs_path(os.path.dirname(self.Args.path), image_path)
+            image_path = Util.abs_path(os.path.dirname(self.DataPath), image_path)
             self.log.info(f"Update [{self.Keyword.ImagePath}]=[{image_path}]")
             self.ImageData[self.Keyword.ImagePath] = image_path
         image_file_name = os.path.basename(image_path)
@@ -109,7 +112,7 @@ class KvmImage:
             if base_image_path is not None:
                 if not os.path.isabs(base_image_path):
                     self.log.info(f"found relative path [{self.Keyword.BaseImagePath}]=[{base_image_path}]")
-                    base_image_path = Util.abs_path(os.path.dirname(self.Args.path), base_image_path)
+                    base_image_path = Util.abs_path(os.path.dirname(self.DataPath), base_image_path)
                     self.log.info(f"Update [{self.Keyword.BaseImagePath}]=[{base_image_path}]")
                     self.ImageData[self.Keyword.BaseImagePath] = base_image_path
                 if not os.path.exists(base_image_path):
@@ -153,6 +156,12 @@ class KvmImage:
             cmd = f"{cmd} {image_size}G"
         self.log.info(f"run command [{cmd}]")
         Util.run_command(cmd)
+
+    def ImagePath(self):
+        return self.ImageData[self.Keyword.ImagePath]
+
+    def disk_cmd(self) -> str:
+        return f"path={self.ImageData[self.Keyword.ImagePath]}"
 
 if __name__ == "__main__":
     logger = Log.get_logger("KvmImage")

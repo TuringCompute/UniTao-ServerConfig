@@ -14,6 +14,8 @@ import os
 from shared.logger import Log
 from shared.utilities import Util
 
+from kvm.image.kvm_image import KvmImage
+
 class KvmVm:
     class Keyword:
         KvmVm = "kvm_vm"
@@ -92,7 +94,8 @@ class KvmVm:
             disk_file_path = self.parse_relative_path(disk_path)
             if not os.path.exists(disk_file_path) or not os.path.isfile(disk_file_path):
                 raise ValueError(f"Disk File Path does not exists[{disk_file_path}]")
-            kvm_disk = KvmDisk(disk_file_path, self.log)
+            kvm_disk = KvmImage(disk_file_path, self.log)
+            #kvm_disk = KvmDisk(disk_file_path, self.log)
             self.Disks.append(kvm_disk)
         use_cloud_init = self.VmData.get(self.Keyword.UseCloudInit, None)
         if use_cloud_init is None:
@@ -265,6 +268,9 @@ class KvmVm:
         self.log.info(f"make sure VM path exists.[{vm_path}]")
         Util.run_command(f"mkdir -p {vm_path}")
         self.create_ci_iso()
+        self.log.info(f"Make sure all disk images created")
+        for disk in self.Disks:
+            disk.Create()
         vm_create_cmd = self.create_vm_cmd()
         vm_def_create_file = os.path.join(vm_path, f"vm_def_create_{self.VmName}.sh")
         self.log.info(f"Create bash file that can create vm definition XML file. {vm_def_create_file}")
