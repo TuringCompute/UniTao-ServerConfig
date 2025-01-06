@@ -168,8 +168,27 @@ class KvmVm:
         user_data_path = self.create_ci_user_data()
         meta_data_path = self.create_ci_meta_data()
         net_config_path = self.create_ci_network_config()
+        self.log.info("Create cidata folder")
+        ci_folder = os.path.join(self.VmData[self.Keyword.VmPath], "ci_data")
+        if os.path.exists(ci_folder):
+            Util.run_command(f"rm -rf {ci_folder}")
+        Util.run_command(f"mkdir -p {ci_folder}")
+        Util.run_command(f"cp {user_data_path} {os.path.join(ci_folder, "user_data")}")
+        Util.run_command(f"cp {meta_data_path} {os.path.join(ci_folder, "meta_data")}")
+        Util.run_command(f"cp {net_config_path} {os.path.join(ci_folder, "network_config")}")
+        ci_def_path = os.path.join(ci_folder, "def_data")
+        self.log.info(f"Create folder in cidata to hold metadata, [{ci_def_path}]")
+        Util.run_command(f"mkdir -p {ci_def_path}")
+        vm_file = os.path.basename(self.Args.path)
+        ci_vm_file = os.path.join(ci_def_path, vm_file)
+        Util.run_command(f"cp {self.Args.path} {ci_vm_file}")
+        for net_file in self.VmData[self.Keyword.Networks]:
+            net_file_name = os.path.basename(net_file)
+            ci_net_file = os.path.join(ci_def_path, net_file_name)
+            Util.run_command(f"cp {net_file} {ci_net_file}")
         self.log.info(f"Generate ISO [{ci_iso_file}]")
-        iso_gen_cmd = f"cloud-localds --network-config {net_config_path} {ci_iso_file} {user_data_path} {meta_data_path}"
+        iso_gen_cmd = f"genisoimage -output {ci_iso_file} -volid cidata -joliet -rock {ci_folder}/"
+        # iso_gen_cmd = f"cloud-localds --network-config {net_config_path} {ci_iso_file} {user_data_path} {meta_data_path}"
         iso_gen_sh_path = os.path.join(self.VmData[self.Keyword.VmPath], "gen_cloud_init_iso.sh")
         self.log.info(f"Record Cloud Init iso generate command @[{iso_gen_sh_path}]")
         with open(iso_gen_sh_path, "w") as fp:
