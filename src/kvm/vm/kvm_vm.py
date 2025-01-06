@@ -173,9 +173,9 @@ class KvmVm:
         if os.path.exists(ci_folder):
             Util.run_command(f"rm -rf {ci_folder}")
         Util.run_command(f"mkdir -p {ci_folder}")
-        Util.run_command(f"cp {user_data_path} {os.path.join(ci_folder, "user_data")}")
-        Util.run_command(f"cp {meta_data_path} {os.path.join(ci_folder, "meta_data")}")
-        Util.run_command(f"cp {net_config_path} {os.path.join(ci_folder, "network_config")}")
+        Util.run_command(f"cp {user_data_path} {os.path.join(ci_folder, "user-data")}")
+        Util.run_command(f"cp {meta_data_path} {os.path.join(ci_folder, "meta-data")}")
+        Util.run_command(f"cp {net_config_path} {os.path.join(ci_folder, "network-config")}")
         ci_def_path = os.path.join(ci_folder, "def_data")
         self.log.info(f"Create folder in cidata to hold metadata, [{ci_def_path}]")
         Util.run_command(f"mkdir -p {ci_def_path}")
