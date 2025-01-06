@@ -183,9 +183,10 @@ class KvmVm:
         ci_vm_file = os.path.join(ci_def_path, vm_file)
         Util.run_command(f"cp {self.Args.path} {ci_vm_file}")
         for net_file in self.VmData[self.Keyword.Networks]:
-            net_file_name = os.path.basename(net_file)
+            real_net_file = self.parse_relative_path(net_file)
+            net_file_name = os.path.basename(real_net_file)
             ci_net_file = os.path.join(ci_def_path, net_file_name)
-            Util.run_command(f"cp {net_file} {ci_net_file}")
+            Util.run_command(f"cp {real_net_file} {ci_net_file}")
         self.log.info(f"Generate ISO [{ci_iso_file}]")
         iso_gen_cmd = f"genisoimage -output {ci_iso_file} -volid cidata -joliet -rock {ci_folder}/"
         # iso_gen_cmd = f"cloud-localds --network-config {net_config_path} {ci_iso_file} {user_data_path} {meta_data_path}"
