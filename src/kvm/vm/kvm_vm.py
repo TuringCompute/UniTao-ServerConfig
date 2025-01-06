@@ -188,7 +188,8 @@ class KvmVm:
         if host_name is not None:
             user_data.extend([
                 "# Basic configuration, change host name",
-               f"hostname: {host_name}"
+               f"hostname: {host_name}",
+               ""
             ])
         default_pwd = self.VmData.get(self.Keyword.DefaultPWD, None)
         if default_pwd is not None: 
@@ -196,6 +197,8 @@ class KvmVm:
                 "# Modify default user password and set the password to be expired after first login",
                f"password: {self.VmData[self.Keyword.DefaultPWD]}",
                 "chpasswd: {expire: False}",
+                "# Allow SSH login for the system",
+                "ssh_pwauth: true",
                 ""
             ])
         Util.write_file(user_data_path, "w", user_data)
