@@ -29,6 +29,7 @@ class KvmVm:
         UseCloudInit = "useCloudInit"
         CIIsoPath = "ciIsoPath"
         DefaultPWD = "defaultPWD"
+        VmHostName = "vmHostName"
 
         class VmStates:
             Running = "running"
@@ -166,8 +167,9 @@ class KvmVm:
             return
         user_data_path = self.create_ci_user_data()
         meta_data_path = self.create_ci_meta_data()
+        net_config_path = self.create_ci_network_config()
         self.log.info(f"Generate ISO [{ci_iso_file}]")
-        iso_gen_cmd = f"cloud-localds {ci_iso_file} {user_data_path} {meta_data_path}"
+        iso_gen_cmd = f"cloud-localds {ci_iso_file} {user_data_path} {meta_data_path} {net_config_path}"
         iso_gen_sh_path = os.path.join(self.VmData[self.Keyword.VmPath], "gen_cloud_init_iso.sh")
         self.log.info(f"Record Cloud Init iso generate command @[{iso_gen_sh_path}]")
         with open(iso_gen_sh_path, "w") as fp:
@@ -180,24 +182,22 @@ class KvmVm:
         self.log.info(f"Create user-data file [{user_data_path}]")
         user_data = [
             "#cloud-config",
-            "",
-            "# Basic configuration, change host name",
-            "hostname: testvm"
+            ""
         ]
+        host_name = self.VmData.get(self.Keyword.VmHostName, None)
+        if host_name is not None:
+            user_data.extend([
+                "# Basic configuration, change host name",
+               f"hostname: {host_name}"
+            ])
         default_pwd = self.VmData.get(self.Keyword.DefaultPWD, None)
         if default_pwd is not None: 
             user_data.extend([
                 "# Modify default user password and set the password to be expired after first login",
                f"password: {self.VmData[self.Keyword.DefaultPWD]}",
-                "",
+                "chpasswd: {expire: False}",
                 ""
             ])
-        user_data_header = KvmNetwork.create_user_data_header()
-        user_data.extend(user_data_header)
-        for idx in range(0, len(self.Networks)):
-            net = self.Networks[idx]
-            net_user_data = net.create_user_data(idx)
-            user_data.extend(net_user_data)
         Util.write_file(user_data_path, "w", user_data)
         return user_data_path
 
@@ -206,15 +206,31 @@ class KvmVm:
         self.log.info(f"Create meta-data file [{meta_data_path}]")
         meta_data = [
             "instance-id: iid-local01",
-            "local-hostname: testvm",
             ""
         ]
+        host_name = self.VmData.get(self.Keyword.VmHostName, None)
+        if host_name is not None:
+            meta_data.append(
+                f"local-hostname: {host_name}"
+            )
         for idx in range(0, len(self.Networks)):
             net = self.Networks[idx]
             net_meta_data = net.create_meta_data(idx)
             meta_data.extend(net_meta_data)
         Util.write_file(meta_data_path, "w", meta_data)
         return meta_data_path
+
+    def create_ci_network_config(self):
+        network_config_path = os.path.join(self.VmData[self.Keyword.VmPath], "network-config.yaml")
+        network_config = []
+        user_data_header = KvmNetwork.create_network_config_header()
+        network_config.extend(user_data_header)
+        for idx in range(0, len(self.Networks)):
+            net = self.Networks[idx]
+            net_config = net.create_network_config(idx)
+            network_config.extend(net_config)
+        Util.write_file(network_config_path, "w", network_config)
+        return network_config_path
 
     def create_vm(self):
         self.log.info(f"Create VM [{self.VmName}]")
@@ -428,38 +444,40 @@ class KvmNetwork:
         return meta_data
 
     @staticmethod
-    def create_user_data_header():
+    def create_network_config_header():
         return [
-            "# Setup Network IP4 addresses",
-            "network:",
-            "  version: 2",
-            "  renderer: networkd",
-            "  ethernets:"
+            "version: 2",
+            "ethernets:"
         ]
 
-    def create_user_data(self, net_idx: int) -> list:
-        mac_name = f"mac{net_idx}"
-        ip4_name = f"ipv4_{net_idx}"
-        user_data = [
-            f"    ${{{mac_name}}}:"
+    def create_network_config(self, net_idx: int) -> list:
+        eth_name = f"eth{net_idx}"
+        network_config = [
+            f"  {eth_name}:",
+            f"    match:",
+            f"      macaddress: \"{self.NetData[self.Keyword.MacAddress]}\"   # Replace with the actual MAC",
+            f"    set-name: {eth_name}",
         ]
-        
         if self.NetData[self.Keyword.UseDHCP4]:
-            user_data.append("      dhcp4: yes")
+            network_config.append("    dhcp4: yes")
         else:
-            user_data.extend([
-                "      dhcp4: no",
-                "      addresses:",
-               f"        -${{{ip4_name}}}"
+            network_config.extend([
+                f"    dhcp4: no",
+                f"    addresses:",
+                f"      - {self.NetData[self.Keyword.IPv4]}            # Your static IP and CIDR"
             ])
-            gateway = self.NetData.get(self.Keyword.Gateway4, None)
-            if gateway is not None:
-                user_data.extend([
-                    "      routes:",
-                    "        - to: 0.0.0.0/0",
-                   f"          via: {gateway}"
+            gateway4 = self.NetData.get(self.Keyword.Gateway4, None)
+            if gateway4 is not None:
+                network_config.extend([
+                    f"    routes:",
+                    f"      - to: 0.0.0.0/0",
+                    f"        via: {gateway4}          # Default gateway for your subnet",
+                    f"    nameservers:",
+                    f"      addresses:",
+                    f"        - 8.8.8.8                     # DNS server(s)",
+                    f"        - 8.8.4.4"
                 ])
-        return user_data
+        return network_config
 
 
 if __name__ == "__main__":
