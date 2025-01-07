@@ -320,31 +320,6 @@ class KvmVm:
             self.log.info(f"VM[{self.VmName}] is not running, start it.")
             Util.run_command(f"virsh start {self.VmName}")
 
-class KvmDisk:
-    class Keyword:
-        DiskPath = "diskPath"
-
-    def __init__(self, data_path: str, logger: logging.Logger):
-        self.log = logger
-        self.DataFile = data_path
-        self.DiskData = Util.read_json_file(data_path)
-        self.Validate()
-    
-    def Validate(self):
-        if not isinstance(self.DiskData, dict):
-            raise ValueError(f"Invalid disk data, not dict. data file = [{self.DataFile}]")
-        disk_file = self.DiskData.get(self.Keyword.DiskPath, None)
-        if disk_file is None:
-            raise ValueError(f"Missing field[{self.Keyword.DiskPath}]")
-        disk_file_real_path = Util.abs_path(os.path.dirname(self.DataFile), disk_file)
-        if not os.path.exists(disk_file_real_path) or not os.path.isfile(disk_file_real_path):
-            raise ValueError(f"invalid disk file, Not exists or not a file. [{disk_file_real_path}]")
-        if disk_file_real_path != disk_file:
-            self.DiskData[self.Keyword.DiskPath] = disk_file_real_path
-
-    def disk_cmd(self) -> str:
-        return f"path={self.DiskData[self.Keyword.DiskPath]}"
-
 class KvmNetwork:
     class Keyword:
         IfaceType = "ifaceType"
