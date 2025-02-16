@@ -7,3 +7,7 @@ sudo apt-get install -y qemu-kvm libvirt-daemon-system libvirt-clients bridge-ut
 # need reboot to take effect
 sudo adduser $USER kvm
 sudo adduser $USER libvirt
+
+# install pip and update to latest
+sudo apt-get install -y python3-pip
+   
