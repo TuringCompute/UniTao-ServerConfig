@@ -166,5 +166,5 @@ class KvmImage:
 if __name__ == "__main__":
     logger = Log.get_logger("KvmImage")
     logger.info("Create Kvm Image")
-    image = KvmImage(logger)
+    image = KvmImage(None, logger)
     image.Create()
