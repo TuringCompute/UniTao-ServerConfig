@@ -37,6 +37,9 @@ example.json
     "vmHostName": "test-01"
 }
 
+
+// The disk link json file is just a link. 
+// For physically generate the image, we still need to use kvm_image.py
 {disk_name}.json
 {
     "diskPath": "path"      // path that link to the disk image file. path can be relative path to the disk data file
