@@ -9,7 +9,7 @@ import random
 
 def generate_mac():
     mac = [random.randint(0, 255) for _ in range(5)]
-    mac_address ='0e:' + ':'.join(f'{num:02X}' for num in mac)
+    mac_address ='0E:' + ':'.join(f'{num:02X}' for num in mac)
     return mac_address
 
 print(generate_mac())
