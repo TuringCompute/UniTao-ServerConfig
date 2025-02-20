@@ -378,6 +378,7 @@ class KvmNetwork:
             return
         if mac_address is None:
             raise ValueError(f"Invalid data, CI need mac_address to config IP for each network interface")
+        self.NetData[self.Keyword.MacAddress] = mac_address.lower()
         use_dhcp4 = self.NetData.get(self.Keyword.UseDHCP4, None)
         if use_dhcp4 is None:
             raise ValueError(f"Missing field[{self.Keyword.DHCP4}] to specify DHCP4 enable or not")
@@ -451,7 +452,7 @@ class KvmNetwork:
         meta_data = []
         if not self.NetData[self.Keyword.UseDHCP4]:
             meta_data.extend([
-                f"{mac_name}: \"{self.NetData[self.Keyword.MacAddress]}\"",
+                f"{mac_name}: \"{self.NetData[self.Keyword.MacAddress].lower()}\"",
                 f"{ip4_name}: \"{self.NetData[self.Keyword.IPv4]}\"",
                 "",
                 ""
