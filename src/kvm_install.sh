@@ -10,4 +10,6 @@ sudo adduser $USER libvirt
 
 # install pip and update to latest
 sudo apt-get install -y python3-pip
-   
+
+# install genisoimage for Cloud-init install 
+sudo apt-get install -y genisoimage

@@ -34,7 +34,10 @@ example.json
     "vmState": "running",
     "useCloudInit": true,
     "ciIsoPath": "{vmPath}/cloud_init.iso",
-    "vmHostName": "test-01"
+    "vmHostName": "test-01",
+    "osType": "linux",                                  // operating system types[linux, windows], 
+                                                        // for now, we only support linux
+    "osVariant": "ubuntu24.04"                          // exact operating system name with version.
 }
 
 

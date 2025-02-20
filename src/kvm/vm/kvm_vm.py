@@ -15,6 +15,7 @@ from shared.logger import Log
 from shared.utilities import Util
 
 from kvm.image.kvm_image import KvmImage
+from network.bridge.net_bridge import NetBridge
 
 class KvmVm:
     class Keyword:
@@ -324,6 +325,7 @@ class KvmNetwork:
     class Keyword:
         IfaceType = "ifaceType"
         BridgeName = "bridgeName"
+        BridgeType = "bridgeType"
         TapSource = "tapSource"
         TapMode = "tapMode"
         MacAddress = "macAddress"
@@ -396,6 +398,11 @@ class KvmNetwork:
         device_name = self.NetData.get(self.Keyword.BridgeName, None)
         if device_name is None:
             raise ValueError(f"Missing field[{self.Keyword.BridgeName}] for [{self.Keyword.InterfaceTypes.Bridge}] interface")
+        bridge_type = self.NetData.get(NetBridge.Keyword.BridgeType, None)
+        if bridge_type is None:
+            raise ValueError(f"Missing field[{NetBridge.Keyword.BridgeType}] for bridge [{device_name}]")
+        if bridge_type not in NetBridge.Keyword.BridgeTypes.list():
+            raise ValueError(f"Invalid field[{NetBridge.Keyword.BridgeType}]=[{bridge_type}], expect {NetBridge.Keyword.BridgeTypes.list()}")
 
     def validate_macvtap(self):
         tap_source = self.NetData.get(self.Keyword.TapSource, None)
@@ -430,7 +437,11 @@ class KvmNetwork:
         if mac_address is not None:
             mac_part = f",mac={mac_address}"
         if self.NetData[self.Keyword.IfaceType] == self.Keyword.InterfaceTypes.Bridge:
-            return f"{self.Keyword.InterfaceTypes.Bridge}={self.NetData[self.Keyword.BridgeName]},model=virtio{mac_part}"
+            bridge_type = self.NetData[NetBridge.Keyword.BridgeType]
+            bridge_cmd = f"{self.Keyword.InterfaceTypes.Bridge}={self.NetData[self.Keyword.BridgeName]}"
+            if bridge_type == NetBridge.Keyword.BridgeTypes.OvsBridge:
+                bridge_cmd = f"{bridge_cmd},virtualport_type=openvswitch"
+            return f"{bridge_cmd},model=virtio{mac_part}"
         if self.NetData[self.Keyword.IfaceType] == self.Keyword.InterfaceTypes.MacVTap:
             return f"type=direct,source={self.NetData[self.Keyword.BridgeName]},source_mode={self.Keyword.TapModes.Bridge},model=virtio{mac_part}"
 
