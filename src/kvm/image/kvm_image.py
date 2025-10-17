@@ -134,6 +134,11 @@ class KvmImage:
         if self.ImageData[self.Keyword.ImageSource] != self.Keyword.Source.Remote:
             return
         image_path = self.ImageData[self.Keyword.ImagePath]
+        image_dir = os.path.dirname(os.path.abspath(image_path))
+        if not os.path.exists(image_dir):
+            self.log.info(f"Image path dir [{image_dir}] does not exists, make one")
+            cmd = f"mkdir -p {image_dir}"
+            Util.run_command(cmd)
         download_link = self.ImageData[self.Keyword.DownloadLink]
         self.log.info(f"Download image [{image_path}] from [{download_link}]")
         wget.download(url=download_link, out=image_path)
