@@ -33,6 +33,7 @@ class KvmVm:
         CIIsoPath = "ciIsoPath"
         DefaultPWD = "defaultPWD"
         VmHostName = "vmHostName"
+        HostCPU = "hostCPU"
 
         class VmStates:
             Running = "running"
@@ -297,13 +298,15 @@ class KvmVm:
             f"  --ram {ram_in_mb}"
             f"  --vcpus {self.VmData[self.Keyword.SMP]}"
         ]
+        if KvmVm.Keyword.HostCPU in self.VmData and self.VmData[KvmVm.Keyword.HostCPU]:
+            vm_create_cmd.append(f"  --cpu host")
         for disk in self.Disks:
-            vm_create_cmd.append(f"--disk {disk.disk_cmd()}")
+            vm_create_cmd.append(f"  --disk {disk.disk_cmd()}")
         for net in self.Networks:
-            vm_create_cmd.append(f"--network {net.net_cmd()}")
+            vm_create_cmd.append(f"  --network {net.net_cmd()}")
         if self.VmData[self.Keyword.UseCloudInit]:
-            vm_create_cmd.append(f"--disk path={self.VmData[self.Keyword.CIIsoPath]},device=cdrom")
-        vm_create_cmd.append(f"--graphics vnc,listen=0.0.0.0")
+            vm_create_cmd.append(f"  --disk path={self.VmData[self.Keyword.CIIsoPath]},device=cdrom")
+        vm_create_cmd.append(f"  --graphics vnc,listen=0.0.0.0")
         return vm_create_cmd
     
     def vm_running(self) -> bool:

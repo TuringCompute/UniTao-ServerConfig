@@ -17,7 +17,8 @@ This utilities will use all the resource and attribute given by json file and cr
     "useCloudInit": true,           // define how the VM will prepare itself
     "ciIsoPath": "{path}",          // path to Cloud Init ISO image file
     "defaultPWD": "{pwd}",          // setup default password for default user and expire after first login   
-    "vmHostName": "{hostname}"      // setup vm hostname when create
+    "vmHostName": "{hostname}",     // setup vm hostname when create
+    "hostCPU": true                 // optional, define if the VM will use --cpu host to set VM use CPU-Pass-Through Mode
 }
 
 example.json
@@ -37,7 +38,8 @@ example.json
     "vmHostName": "test-01",
     "osType": "linux",                                  // operating system types[linux, windows], 
                                                         // for now, we only support linux
-    "osVariant": "ubuntu24.04"                          // exact operating system name with version.
+    "osVariant": "ubuntu24.04",                         // exact operating system name with version.
+    "hostCPU": true                                     // define VM to use CPU Pass Through Mode
 }
 
 
